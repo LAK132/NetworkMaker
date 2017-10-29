@@ -1,22 +1,21 @@
 #include <iostream>
+#include "node.h"
 
 using namespace std;
 
-typedef struct nodedata {
-	double output;
-} nodedata_t;
-
-typedef struct node {
-	int posX;
-	int posY;
-	nodedata_t data;
-} node_t;
-
 int main()
 {
-	node_t node;
-	node.posX = 10;
-	cout << "hello node " << node.posX << endl;
+	Node node = Node();
+	node.output.weight = 1;
+	Node node2 = Node();
+	node2.output.weight = 1;
+	Node node3 = Node(2);
+	node.data.set(1.0);
+	node2.data.set(2.0);
+	node3.input[0] = &node.output;
+	node3.input[1] = &node2.output;
+	node3.calc();
+	cout << "hello node " << node3.data.get<double>() << endl;
 	int junk;
 	cin >> junk;
 	return 0;
