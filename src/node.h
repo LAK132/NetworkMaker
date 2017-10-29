@@ -1,36 +1,50 @@
 #include <stdlib.h>
+#include <vector>
 #include "property.h"
 #ifndef NODE_H
 #define NODE_H
 
+using std::vector;
+
 class Node;
 
-class Link {
+class Socket {
 	private:
 	public:
 	Node* parent;
 	double weight;
 };
 
+class Link {
+	public:
+	Socket* to;
+	Socket* from;
+	Link(Socket* t, Socket* f) {
+		to = t;
+		from = f;
+	}
+};
+
 class Node {
 	private:
 	public:
-	size_t numIn;
-	Link** input;
-	Link output;
+	vector<Socket*> input;
+	Socket* output;
 	Property data;
 	
 	Node(size_t numInputs = 0) {
-		numIn = numInputs;
-		input = (Link**)malloc (numInputs * sizeof (Link*));
-		output.parent = this;
+		input.resize(numInputs);
+		for (auto it = input.begin(); it != input.end(); it++) *it = new Socket();
+		output = new Socket();
+		output->parent = this;
 	}
 	~Node() {
-		delete[] input;
+		for (auto it = input.begin(); it != input.end(); it++) delete *it;
+		delete output;
 	}
 	void calc() {
 		double temp = 0.0;
-		for (size_t i = 0; i < numIn; i++) {
+		for (size_t i = 0; i < input.size(); i++) {
 			temp += input[i]->weight * input[i]->parent->data.get<double>();
 		}
 		data.set(temp);
