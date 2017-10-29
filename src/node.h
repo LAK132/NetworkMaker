@@ -23,7 +23,7 @@ class Link {
 	public:
 	Socket* to;
 	Socket* from;
-	Link(Socket* t, Socket* f) {
+	Link(Socket* f, Socket* t) {
 		to = t;
 		t->link = this;
 		from = f;
