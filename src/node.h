@@ -7,12 +7,16 @@
 using std::vector;
 
 class Node;
+class Link;
 
 class Socket {
-	private:
 	public:
 	Node* parent;
+	Link* link;
 	double weight;
+	Property data;
+	Socket(Node* n, double w = 1.0);
+	~Socket();
 };
 
 class Link {
@@ -21,22 +25,31 @@ class Link {
 	Socket* from;
 	Link(Socket* t, Socket* f) {
 		to = t;
+		t->link = this;
 		from = f;
+		f->link = this;
 	}
+	~Link(){}
 };
 
+Socket::Socket(Node* n, double w) {
+	parent = n;
+	weight = w;
+	link = 0;
+}
+Socket::~Socket() {
+	if (link != 0) delete link;
+}
+
 class Node {
-	private:
 	public:
 	vector<Socket*> input;
 	Socket* output;
-	Property data;
 	
 	Node(size_t numInputs = 0) {
 		input.resize(numInputs);
-		for (auto it = input.begin(); it != input.end(); it++) *it = new Socket();
-		output = new Socket();
-		output->parent = this;
+		for (auto it = input.begin(); it != input.end(); it++) *it = new Socket(this);
+		output = new Socket(this);
 	}
 	~Node() {
 		for (auto it = input.begin(); it != input.end(); it++) delete *it;
@@ -44,10 +57,11 @@ class Node {
 	}
 	void calc() {
 		double temp = 0.0;
-		for (size_t i = 0; i < input.size(); i++) {
-			temp += input[i]->weight * input[i]->parent->data.get<double>();
+		for (auto it = input.begin(); it != input.end(); it++) {
+			if ((*it)->link != 0) temp += (*it)->weight * (*it)->link->from->parent->output->data.get<double>();
+			else temp += (*it)->weight * (*it)->data.get<double>();
 		}
-		data.set(temp);
+		output->data.set(temp);
 	}
 };
 
