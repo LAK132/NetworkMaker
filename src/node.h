@@ -6,8 +6,17 @@
 
 using std::vector;
 
-class Node;
+class Socket;
 class Link;
+
+class Node {
+	public:
+	vector<Socket*> input;
+	Socket* output;
+	Node(size_t numInputs = 0);
+	~Node();
+	void calc();
+};
 
 class Socket {
 	public:
@@ -23,13 +32,8 @@ class Link {
 	public:
 	Socket* to;
 	Socket* from;
-	Link(Socket* f, Socket* t) {
-		to = t;
-		t->link = this;
-		from = f;
-		f->link = this;
-	}
-	~Link(){}
+	Link(Socket* f, Socket* t);
+	~Link();
 };
 
 Socket::Socket(Node* n, double w) {
@@ -37,32 +41,40 @@ Socket::Socket(Node* n, double w) {
 	weight = w;
 	link = 0;
 }
+
 Socket::~Socket() {
 	if (link != 0) delete link;
 }
 
-class Node {
-	public:
-	vector<Socket*> input;
-	Socket* output;
-	
-	Node(size_t numInputs = 0) {
-		input.resize(numInputs);
-		for (auto it = input.begin(); it != input.end(); it++) *it = new Socket(this);
-		output = new Socket(this);
+Link::Link(Socket* f, Socket* t) {
+	to = t;
+	t->link = this;
+	from = f;
+	f->link = this;
+}
+
+Link::~Link(){}
+
+Node::Node(size_t numInputs) {
+	input.resize(numInputs);
+	for (auto it = input.begin(); it != input.end(); it++) *it = new Socket(this);
+	output = new Socket(this);
+}
+
+Node::~Node() {
+	for (auto it = input.begin(); it != input.end(); it++) delete *it;
+	delete output;
+}
+
+void Node::calc() {
+	double temp = 0.0;
+	for (auto it = input.begin(); it != input.end(); it++) {
+		double get = ((*it)->link == 0 
+			? (*it)->data.get<double>() 
+			: (*it)->link->from->parent->output->data.get<double>());
+		temp += (*it)->weight * get;
 	}
-	~Node() {
-		for (auto it = input.begin(); it != input.end(); it++) delete *it;
-		delete output;
-	}
-	void calc() {
-		double temp = 0.0;
-		for (auto it = input.begin(); it != input.end(); it++) {
-			if ((*it)->link != 0) temp += (*it)->weight * (*it)->link->from->parent->output->data.get<double>();
-			else temp += (*it)->weight * (*it)->data.get<double>();
-		}
-		output->data.set(temp);
-	}
-};
+	output->data.set(temp);
+}
 
 #endif
