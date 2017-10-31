@@ -13,16 +13,18 @@ class Node {
 	public:
 	vector<Socket*> input;
 	Socket* output;
+	Property data;
 	Node(size_t numInputs = 0);
 	~Node();
-	void calc();
+	template<typename N, typename S>
+	void init();
 };
 
 class Socket {
 	public:
 	Node* parent;
 	Link* link;
-	double weight;
+	//double weight;
 	Property data;
 	Socket(Node* n, double w = 1.0);
 	~Socket();
@@ -37,13 +39,16 @@ class Link {
 };
 
 Socket::Socket(Node* n, double w) {
+	//data.init<T>();
 	parent = n;
-	weight = w;
 	link = 0;
 }
 
 Socket::~Socket() {
-	if (link != 0) delete link;
+	if (link != 0 && link->to == this) {
+		//printf("delete link\n");
+		delete link;
+	}
 }
 
 Link::Link(Socket* f, Socket* t) {
@@ -53,7 +58,15 @@ Link::Link(Socket* f, Socket* t) {
 	f->link = this;
 }
 
-Link::~Link(){}
+Link::~Link() {
+}
+
+template<typename N, typename S>
+void Node::init() {
+	data.init<N>(this);
+	for (auto it = input.begin(); it != input.end(); it++) (*it)->data.init<S>((*it));
+	output->data.init<S>(output);
+}
 
 Node::Node(size_t numInputs) {
 	input.resize(numInputs);
@@ -62,11 +75,13 @@ Node::Node(size_t numInputs) {
 }
 
 Node::~Node() {
+	//printf("delete input\n");
 	for (auto it = input.begin(); it != input.end(); it++) delete *it;
+	//printf("delete output\n");
 	delete output;
 }
 
-void Node::calc() {
+/*void Node::calc() {
 	double temp = 0.0;
 	for (auto it = input.begin(); it != input.end(); it++) {
 		double get = ((*it)->link == 0 
@@ -75,6 +90,6 @@ void Node::calc() {
 		temp += (*it)->weight * get;
 	}
 	output->data.set(temp);
-}
+}*/
 
 #endif

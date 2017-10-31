@@ -10,6 +10,8 @@ void del(void* p)
 	delete (T*)p;
 }
 
+void noDel(void* p) {}
+
 class Property
 {
 private:
@@ -21,17 +23,19 @@ public:
 	{
 		isInit = false;
 	}
-	template<typename T>
-	void init()
+	template<typename T, typename... Ta>
+	void init(Ta... args)
 	{
+		if (isInit) deleter(value);
 		deleter = del<T>;
-		value = new T();
+		//value = (T*)malloc(sizeof(T));
+		value = new T(args...);
 		isInit = true;
 	}
-	template<typename T>
-	Property()
+	template<typename T, typename... Ta>
+	Property(Ta... args)
 	{
-		init<T>();
+		init<T>(args...);
 	}
 	~Property()
 	{
@@ -44,10 +48,29 @@ public:
 		*((T*)value) = val;
 	}
 	template<typename T>
+	void setr(T& val)
+	{
+		if (!isInit) init<T>();
+		*((T*)value) = val;
+	}
+	template<typename T>
 	T get()
 	{
 		if (!isInit) init<T>();
 		return *((T*)value);
 	}
+	template<typename T>
+	T& getr()
+	{
+		//if (!isInit) init<T>();
+		return *((T*)value);
+	}
+	template<typename T>
+	T* getp()
+	{
+		if (!isInit) init<T>();
+		return ((T*)value);
+	}
 };
+
 #endif
