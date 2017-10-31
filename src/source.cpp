@@ -9,7 +9,10 @@ int main()
 	Property prop = Property();
 	prop.set(f2);
 	cout << prop.get<int(*)(int)>()(10);*/
-
+	
+	typedef Network::Neuron Neuron;
+	typedef Network::Synapse Synapse;
+	
 	//cout << 1 << endl;
 	vector<Node*> node;
 	node.push_back(new Node());
