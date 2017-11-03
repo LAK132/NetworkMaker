@@ -1,33 +1,92 @@
 #include <stdlib.h>
 #include <vector>
-#include "property.h"
-#ifndef NODE_H
-#define NODE_H
+#include <string>
+#include <map>
+#include <thread>
+
+#include <iostream>
+using std::cout;
+using std::endl;
 
 using std::vector;
+using std::string;
+using std::to_string;
+using std::map;
+using std::thread;
+
+#include "property.h"
+
+class SQL
+{
+private:
+    bool lock;
+public:
+    sqlite3* db;
+    char* zErrMsg;
+    int rc;
+    map<string, vector<string>> data;
+    SQL(const char* dbloc)
+    {
+        rc = sqlite3_open(dbloc, &db);
+    }
+    size_t exec(string str)
+    {
+		lock = true;
+		data.clear();
+		/*typedef struct temp {
+			SQL* sql;
+			string str;
+			int* rc;
+		} temp_t;
+		temp_t t; t.sql = this; t.str = str; t.rc = &rc;
+        thread sqlexec ([](temp_t t){
+			*(t.rc) = sqlite3_exec(t.sql->db, t.str.c_str(), t.sql->callback, t.sql, &(t.sql->zErrMsg));
+		}, t);*/
+		rc = sqlite3_exec(db, str.c_str(), callback, this, &(zErrMsg));
+		//while(lock);
+		//sqlexec.join();
+		cout << "count: " << data.size() << endl;
+        return data.size();
+    }
+    static int callback(void* caller, int argc, char** argv, char** azColName)
+    {
+        SQL* c = (SQL*) caller;
+        for (size_t i = 0; i < argc; i++)
+        {
+			if(c->data.count(azColName[i]) == 0) c->data[azColName[i]] = vector<string>(1);
+            c->data[azColName[i]].push_back((argv[i] ? argv[i] : "0"));
+        }
+        c->lock = false;
+        return 0;
+    }
+};
 
 class Socket;
 class Link;
 
 class Node {
-	public:
+public:
+	uint64_t ID;
+	uint64_t TreeID;
 	vector<Socket*> input;
 	Socket* output;
 	Property data;
-	Node(size_t numInputs = 0);
+	Node(size_t numInputs = 0, uint64_t iID = 0, uint64_t iTreeID = 0);
 	~Node();
 	template<typename N, typename S>
-	void init();
+	void init(SQL* sql);
 };
 
 class Socket {
-	public:
+public:
+	uint64_t ID;
 	Node* parent;
 	Link* link;
-	//double weight;
 	Property data;
-	Socket(Node* n, double w = 1.0);
+	Socket(Node* n, uint64_t iID = 0);
 	~Socket();
+	template<typename T>
+	void init(SQL* sql);
 };
 
 class Link {
@@ -38,8 +97,8 @@ class Link {
 	~Link();
 };
 
-Socket::Socket(Node* n, double w) {
-	//data.init<T>();
+Socket::Socket(Node* n, uint64_t iID) {
+	ID = iID;
 	parent = n;
 	link = 0;
 }
@@ -49,6 +108,23 @@ Socket::~Socket() {
 		//printf("delete link\n");
 		delete link;
 	}
+}
+
+template<typename T>
+void Socket::init(SQL* sql) {
+	string str = "select Socket.Data from Socket join Node on Socket.Node == Node.ID ";
+	str += "where Node.ID == '";
+	str += to_string((uint64_t)(parent->ID));
+	str += "' and Node.Tree == '";
+	str += to_string((uint64_t)(parent->TreeID));
+	str += "' and Socket.ID == '";
+	str += to_string((uint64_t)(ID));
+	str += "'";
+	cout << str << endl;
+
+	sql->exec(str);
+	
+	data.init<T>(this, &(sql->data));
 }
 
 Link::Link(Socket* f, Socket* t) {
@@ -61,17 +137,13 @@ Link::Link(Socket* f, Socket* t) {
 Link::~Link() {
 }
 
-template<typename N, typename S>
-void Node::init() {
-	data.init<N>(this);
-	for (auto it = input.begin(); it != input.end(); it++) (*it)->data.init<S>((*it));
-	output->data.init<S>(output);
-}
-
-Node::Node(size_t numInputs) {
+Node::Node(size_t numInputs, uint64_t iID, uint64_t iTreeID) {
+	ID = iID;
+	TreeID = iTreeID;
 	input.resize(numInputs);
-	for (auto it = input.begin(); it != input.end(); it++) *it = new Socket(this);
-	output = new Socket(this);
+	size_t i = 1;
+	for (auto it = input.begin(); it != input.end(); it++) *it = new Socket(this, i++);
+	output = new Socket(this, 0);
 }
 
 Node::~Node() {
@@ -81,15 +153,30 @@ Node::~Node() {
 	delete output;
 }
 
-/*void Node::calc() {
-	double temp = 0.0;
-	for (auto it = input.begin(); it != input.end(); it++) {
-		double get = ((*it)->link == 0 
-			? (*it)->data.get<double>() 
-			: (*it)->link->from->parent->output->data.get<double>());
-		temp += (*it)->weight * get;
-	}
-	output->data.set(temp);
-}*/
+template<typename N, typename S>
+void Node::init(SQL* sql) {
+	string str = "select Node.Data from Node ";
+	str += "where ID == '";
+	str += to_string((uint64_t)(ID));
+	str += "' and Tree == '";
+	str += to_string((uint64_t)(TreeID));
+	str += "'";
+	cout << str << endl;
 
-#endif
+	sql->exec(str);
+	
+	data.init<N>(this, &(sql->data));
+	for (auto it = input.begin(); it != input.end(); it++) (*it)->init<S>(sql);
+	output->init<S>(sql);
+	/*(*it)->data.init<S>((*it));
+	output->data.init<S>(output);*/
+}
+/*
+int main()
+{
+	Property p;
+	p.set(1);
+	p.getr<int>();
+    return 0;
+}
+*/

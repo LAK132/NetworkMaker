@@ -2,9 +2,7 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
-class Property;
-
-template<typename T>
+template<typename T> 
 void del(void* p)
 {
 	delete (T*)p;
@@ -23,6 +21,15 @@ public:
 	{
 		isInit = false;
 	}
+	~Property()
+	{
+		if (isInit) deleter(value);
+	}
+	template<typename T, typename... Ta>
+	Property(Ta... args)
+	{
+		init<T>(args...);
+	}
 	template<typename T, typename... Ta>
 	void init(Ta... args)
 	{
@@ -31,15 +38,6 @@ public:
 		//value = (T*)malloc(sizeof(T));
 		value = new T(args...);
 		isInit = true;
-	}
-	template<typename T, typename... Ta>
-	Property(Ta... args)
-	{
-		init<T>(args...);
-	}
-	~Property()
-	{
-		if (isInit) deleter(value);
 	}
 	template<typename T>
 	void set(T val)
