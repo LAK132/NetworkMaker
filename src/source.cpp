@@ -28,14 +28,6 @@ void sqlcheck(int rc, char* zErrMsg)
 
 int main()
 {
-<<<<<<< HEAD
-	SimpComp sc = SimpComp(3);
-	sc.init<Neuron, Synapse>();
-	sc.node[0]->output->data.getr<Synapse>().set(1.0);
-	sc.node[1]->output->data.getr<Synapse>().set(2.0);
-	
-	sc.node[2]->data.getr<Neuron>().calc();
-=======
 	sqlite3* db;
 	char* zErrMsg = 0;
 	int rc;
@@ -93,13 +85,9 @@ int main()
 	sc.init<Neuron, Synapse>(sql);
 	
 	cout << "5\n";
->>>>>>> maketest
 
 	cout << "simplicial complex " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
 	
-<<<<<<< HEAD
-	
-=======
 	cout << "6\n";
 	
 	//cout << 3 << endl;
@@ -118,7 +106,6 @@ int main()
 	//cout << 5 << endl;
 	cout << "hello node " << node[2]->output->data.getr<Synapse>().get() << endl;
 	cout << "simplicial " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
->>>>>>> maketest
 	int junk;
 	cin >> junk;
 	return 0;
