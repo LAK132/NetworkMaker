@@ -18,8 +18,6 @@ using std::thread;
 
 class SQL
 {
-private:
-    bool lock;
 public:
     sqlite3* db;
     char* zErrMsg;
@@ -31,20 +29,8 @@ public:
     }
     size_t exec(string str)
     {
-		lock = true;
 		data.clear();
-		/*typedef struct temp {
-			SQL* sql;
-			string str;
-			int* rc;
-		} temp_t;
-		temp_t t; t.sql = this; t.str = str; t.rc = &rc;
-        thread sqlexec ([](temp_t t){
-			*(t.rc) = sqlite3_exec(t.sql->db, t.str.c_str(), t.sql->callback, t.sql, &(t.sql->zErrMsg));
-		}, t);*/
 		rc = sqlite3_exec(db, str.c_str(), callback, this, &(zErrMsg));
-		//while(lock);
-		//sqlexec.join();
 		cout << "count: " << data.size() << endl;
         return data.size();
     }
@@ -56,9 +42,42 @@ public:
 			if(c->data.count(azColName[i]) == 0) c->data[azColName[i]] = vector<string>(1);
             c->data[azColName[i]].push_back((argv[i] ? argv[i] : "0"));
         }
-        c->lock = false;
         return 0;
     }
+};
+
+class Node;
+
+class NodeTree 
+{
+public:
+	string name;
+	vector<Node*> node;
+	NodeTree(string ntName, SQL* sql)
+	{
+		name = ntName;
+		if (sql != 0) load(sql);
+	}
+	void load(SQL* sql)
+	{
+		string str = "select count(Node.ID) as numNodes from NodeTree join Node on Node.Tree == NodeTree.ID where NodeTree.Name == '";
+		str += name;
+		str += "'";
+		sql->exec(str);
+		
+		char* numNodesStr = sql->data["numNodes"][0].c_str();
+		uint64_t numNodes = 0;
+		for (size_t i = 0; numNodesStr[i] != 0; i++)
+		{
+			numNodes *= 10;
+			numNodes += numNodesStr[i] - '0';
+		}
+		node.resize(numNodes);
+		for (uint64_t i = 0; i < numNodes; i++)
+		{
+			node[i] = new Node(this, i, sql);
+		}
+	}
 };
 
 class Socket;
@@ -66,11 +85,39 @@ class Link;
 
 class Node {
 public:
-	uint64_t ID;
-	uint64_t TreeID;
+	NodeTree* nodetree
+	uint64_t id;
 	vector<Socket*> input;
 	Socket* output;
 	Property data;
+	Node(NodeTree* nt, uint64_t _id, SQL* sql)
+	{
+		nodetree = nt;
+		id = _id;
+		if (sql != 0) load(sql);
+	}
+	void load(SQL* sql)
+	{
+		string str = "select * from Node where NodeTree == '";
+		str += nodetree->name;
+		str += "' and ID == '";
+		str += id;
+		str += "'";
+		sql->exec(str);
+		
+		char* numNodesStr = sql->data["numNodes"][0].c_str();
+		uint64_t numNodes = 0;
+		for (size_t i = 0; numNodesStr[i] != 0; i++)
+		{
+			numNodes *= 10;
+			numNodes += numNodesStr[i] - '0';
+		}
+		node.resize(numNodes);
+		for (uint64_t i = 0; i < numNodes; i++)
+		{
+			node[i] = new Node(this, i, sql);
+		}
+	}
 	Node(size_t numInputs = 0, uint64_t iID = 0, uint64_t iTreeID = 0);
 	~Node();
 	template<typename N, typename S>
