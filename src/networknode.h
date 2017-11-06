@@ -1,8 +1,11 @@
+#ifndef NETWORKNODE_H
+#define NETWORKNODE_H
+
 #include <vector>
 using std::vector;
 #include "node.h"
 
-class SimpComp
+/*class SimpComp
 {
 public:
 	size_t treeID;
@@ -31,7 +34,7 @@ public:
 	{
 		for (auto it = node.begin(); it != node.end(); it++) (*it)->init<N, S>(sql);
 	}
-};
+};*/
 
 class Synapse
 {
@@ -40,16 +43,19 @@ private:
 public:
 	double weight;
 	Socket *sock;
-	Synapse(Socket* s, map<string, vector<string>>* d)
+	Synapse(){}
+	Synapse(Socket* s, Synapse data)
 	{
 		sock = s;
-		weight = 1.0;
+		weight = data.weight;
+		val = data.val;
+		cout << "init synapse " << sock << " " << weight << " " << val << endl;
 	}
 	void set(double value)
 	{
 		val = value;
 	}
-	double get()			// Socket* sock)
+	double get()
 	{
 		if (sock->link == 0 || sock->link->from == sock)
 		{
@@ -57,7 +63,7 @@ public:
 		}
 		else
 		{
-			Socket *other = sock->link->from->parent->output;
+			Socket *other = sock->link->from;
 			double rtn = other->data.getr<Synapse>().get();
 			return rtn * weight;
 		}
@@ -67,10 +73,12 @@ public:
 class Neuron
 {
 public:
-	Node * node;
-	Neuron(Node* n, map<string, vector<string>>* d)
+	Node* node;
+	Neuron(){}
+	Neuron(Node* n, Neuron data)
 	{
 		node = n;
+		cout << "init neuron " << node << endl;
 	}
 	void calc()
 	{
@@ -78,8 +86,10 @@ public:
 		for (auto it = node->input.begin(); it != node->input.end(); it++)
 		{
 			// printf("temp %d\n",(int)temp);
-			temp += (*it)->data.getr<Synapse>().get();	// *it);
+			temp += (*it)->data.getr<Synapse>().get();
 		}
-		node->output->data.getr<Synapse>().set(temp);
+		node->output[0]->data.getr<Synapse>().set(temp);
 	}
 };
+
+#endif

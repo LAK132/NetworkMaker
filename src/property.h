@@ -13,6 +13,8 @@ void noDel(void* p) {}
 class Property
 {
 private:
+	size_t dsize;
+	size_t psize;
 	bool isInit;
 	void* value;
 	void(*deleter)(void*);
@@ -28,6 +30,7 @@ public:
 	template<typename T, typename... Ta>
 	Property(Ta... args)
 	{
+		isInit = false;
 		init<T>(args...);
 	}
 	template<typename T, typename... Ta>
@@ -35,9 +38,14 @@ public:
 	{
 		if (isInit) deleter(value);
 		deleter = del<T>;
-		//value = (T*)malloc(sizeof(T));
 		value = new T(args...);
+		dsize = sizeof(T);
+		psize = sizeof(T*);
 		isInit = true;
+	}
+	size_t size()
+	{
+		return dsize;
 	}
 	template<typename T>
 	void set(T val)

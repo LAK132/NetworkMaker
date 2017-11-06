@@ -3,7 +3,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <vector>
-//#include "networknode.h"
+#include "networknode.h"
 #include "node.h"
 
 using namespace std;
@@ -31,8 +31,23 @@ void sqlcheck(int rc, char* zErrMsg)
 int main()
 {
 	sqlite3* db;
+	int rc = sqlite3_open("demo/demo1.db", &db);
+	sqlite3_stmt* stmt;
+	const char* unused;
+	rc = sqlite3_prepare_v2(db, "select ID from Socket", 100, &stmt, &unused);
+	int i;
+	while((i = sqlite3_step(stmt)) != SQLITE_DONE)
+	{
+		if (i == SQLITE_ROW)
+		{
+			cout << sqlite3_column_int64(stmt, 0);
+		}
+	}
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+
+	//sqlite3* db;
 	char* zErrMsg = 0;
-	int rc;
 
 	string dbloc = ":memory:";
 	cout << "Database: ";
@@ -78,6 +93,7 @@ int main()
 	
 	cout << "3\n";
 
+	nt.init<Neuron, Synapse>(sql);
 	//node[0]->init<Neuron, Synapse>(sql);
 	//node[1]->init<Neuron, Synapse>(sql);
 	//node[2]->init<Neuron, Synapse>(sql);

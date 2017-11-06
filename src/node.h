@@ -1,6 +1,10 @@
+#ifndef NODE_H
+#define NODE_H
+
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <map>
 #include <thread>
 
@@ -84,6 +88,10 @@ public:
 		if (sql != 0) load(sql);
 	}
 	void load(SQL* sql);
+	template<typename N, typename S>
+	void init(SQL* sql);
+	template<typename N, typename S>
+	void save(SQL* sql);
 };
 
 class Socket;
@@ -106,6 +114,10 @@ public:
 	inline Socket* addInput(SQL* sql = 0) {return addSocket(true, sql);}
 	inline Socket* addOutput(SQL* sql = 0) {return addSocket(false, sql);}
 	void load(SQL* sql);
+	template<typename N, typename S>
+	void init(SQL* sql);
+	template<typename N, typename S>
+	void save(SQL* sql);
 };
 
 class Socket {
@@ -126,26 +138,12 @@ public:
 	~Socket();
 	void load(SQL* sql)
 	{
-		/*string str = "select Link.FromNode, Link.FromSocket, Link.ToNode, Link.ToSocket from Link join Socket join Node on Socket.Node == Node.ID ";
-		str += "where Node.Tree == '";
-		str += to_string(node->nodetree->id);
-		str += "' and Node.ID == '";
-		str += to_string(node->id);
-		str += "' and Socket.ID == '";
-		str += to_string(id);
-		str += "'";
-		sql->exec(str);
-		
-		if (input)
-		{
-			uin64_t fnid = strtoi64(sql->data["FromNode"][0]);
-			uin64_t fsid = strtoi64(sql->data["FromSocket"][0]);
-			if (node->nodetree->node.size() > fnid && node->nodetree->node[fnid]->output.size() > fsid)
-			{
 
-			}
-		}*/
 	}
+	template<typename S>
+	void init(SQL* sql);
+	template<typename S>
+	void save(SQL* sql);
 };
 
 class Link {
@@ -196,7 +194,7 @@ void Node::load(SQL* sql)
 	sql->exec(str);
 	
 	uint64_t numSockets = sql->data["Input"].size();
-	cout << numSockets << endl;
+	//cout << numSockets << endl;
 	uint64_t numInputs = 0;
 	uint64_t numOutputs = 0;
 	for (uint64_t i = 0; i < numSockets; i++)
@@ -278,3 +276,74 @@ void NodeTree::load(SQL* sql)
 		}
 	}
 }
+
+template<typename N, typename S>
+void NodeTree::init(SQL* sql)
+{
+	for(auto it = node.begin(); it != node.end(); it++) (*it)->init<N, S>(sql);
+}
+
+template<typename N, typename S>
+void Node::init(SQL* sql)
+{
+	string str = "select Data "\
+		"from Node "\
+		"where Node.Tree == ";
+	str += i64tostr(nodetree->id);
+	str += " and Node.ID == ";
+	str += i64tostr(id);
+	sql->exec(str);
+
+	N n;
+	memcpy(&n, &(sql->data["Data"][0][0]), sizeof(N));
+	data.init<N>(this, n);
+
+	for(auto it = input.begin(); it != input.end(); it++) (*it)->init<S>(sql);
+	for(auto it = output.begin(); it != output.end(); it++) (*it)->init<S>(sql);
+}
+
+template<typename S>
+void Socket::init(SQL* sql)
+{
+	string str = "select Data "\
+		"from Socket "\
+		"where Socket.Tree == ";
+	str += i64tostr(node->nodetree->id);
+	str += " and Socket.Node == ";
+	str += i64tostr(node->id);
+	str += " and Socket.ID == ";
+	str += i64tostr(id);
+	sql->exec(str);
+
+	S s;
+	memcpy(&s, &(sql->data["Data"][0][0]), sizeof(S));
+	data.init<S>(this, s);
+}
+
+template<typename N, typename S>
+void NodeTree::save(SQL* sql)
+{
+	
+}
+
+template<typename N, typename S>
+void Node::save(SQL* sql)
+{
+	
+}
+
+template<typename S>
+void Socket::save(SQL* sql)
+{
+	string str = "select Data "\
+		"from Socket "\
+		"where Socket.Tree == ";
+	str += i64tostr(node->nodetree->id);
+	str += " and Socket.Node == ";
+	str += i64tostr(node->id);
+	str += " and Socket.ID == ";
+	str += i64tostr(id);
+	sql->exec(str);
+}
+
+#endif
