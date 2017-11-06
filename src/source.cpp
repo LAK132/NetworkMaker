@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <sqlite3.h>
 #include <string>
-#include "networknode.h"
+#include <vector>
+//#include "networknode.h"
+#include "node.h"
 
 using namespace std;
 
@@ -68,44 +70,46 @@ int main()
 	cout << "2\n";
 
 	//cout << 1 << endl;
-	vector<Node*> node;
-	node.push_back(new Node(0, 0));
-	node.push_back(new Node(0, 1));	
-	node.push_back(new Node(2, 2));
+	//vector<Node*> node;
+	//node.push_back(new Node(0, 0));
+	//node.push_back(new Node(0, 1));	
+	//node.push_back(new Node(2, 2));
+	NodeTree nt = NodeTree(0, sql);
 	
 	cout << "3\n";
 
-	node[0]->init<Neuron, Synapse>(sql);
-	node[1]->init<Neuron, Synapse>(sql);
-	node[2]->init<Neuron, Synapse>(sql);
+	//node[0]->init<Neuron, Synapse>(sql);
+	//node[1]->init<Neuron, Synapse>(sql);
+	//node[2]->init<Neuron, Synapse>(sql);
 	
 	cout << "4\n";
 
-	SimpComp sc = SimpComp(3, 0);
-	sc.init<Neuron, Synapse>(sql);
+	//SimpComp sc = SimpComp(3, 0);
+	//sc.init<Neuron, Synapse>(sql);
 	
 	cout << "5\n";
 
-	cout << "simplicial complex " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
+	//cout << "simplicial complex " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
 	
 	cout << "6\n";
 	
 	//cout << 3 << endl;
-	node[0]->output->data.getr<Synapse>().set(1.0);
-	node[1]->output->data.getr<Synapse>().set(2.0);
+	//node[0]->output->data.getr<Synapse>().set(1.0);
+	//node[1]->output->data.getr<Synapse>().set(2.0);
 
-	sc.node[0]->output->data.getr<Synapse>().set(1.0);
-	sc.node[1]->output->data.getr<Synapse>().set(2.0);
+	//sc.node[0]->output->data.getr<Synapse>().set(1.0);
+	//sc.node[1]->output->data.getr<Synapse>().set(2.0);
 	
 	//cout << 4 << endl;
 	//node[2]->calc();
-	node[2]->data.getr<Neuron>().calc();
+	//node[2]->data.getr<Neuron>().calc();
 	
-	sc.node[2]->data.getr<Neuron>().calc();
+	//sc.node[2]->data.getr<Neuron>().calc();
 
 	//cout << 5 << endl;
-	cout << "hello node " << node[2]->output->data.getr<Synapse>().get() << endl;
-	cout << "simplicial " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
+	//cout << "hello node " << node[2]->output->data.getr<Synapse>().get() << endl;
+	//cout << "simplicial " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
+	//cout << "node " << nt.node[2]->output->data.getr<Synapse>().get() << endl;
 	int junk;
 	cin >> junk;
 	return 0;
