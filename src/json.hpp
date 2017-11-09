@@ -5,6 +5,9 @@ using std::string;
 using std::vector;
 #include <map>
 using std::map;
+#include <iostream>
+using std::istream;
+using std::ostream;
 #include "property.hpp"
 
 #ifndef JSON_H
@@ -21,7 +24,9 @@ public:
 	JSON& operator()(const string& idx);
 	Property* operator->();
 	size_t objSize();
-	size_t arrSize();
+    size_t arrSize();
+    friend ostream& operator<<(ostream& os, const JSON& json);
+    friend istream& operator>>(istream& is, JSON& json);
 };
 
 #endif
