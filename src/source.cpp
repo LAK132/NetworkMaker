@@ -1,75 +1,16 @@
 #include <iostream>
 #include <stdio.h>
-#include <sqlite3.h>
 #include <string>
 #include <vector>
-#include "networknode.h"
-#include "node.h"
+#include "networknode.hpp"
+#include "node.hpp"
+#include "json.hpp"
+#include "property.hpp"
 
 using namespace std;
 
-static int callback(void* data, int argc, char** argv, char** azColName)
-{
-	cout << (const char*)data << endl;
-	for (int i = 0; i < argc; i++)
-	{
-		cout << azColName[i] << " = " << (argv[i] ? argv[i] : "NULL") << endl;
-	}
-	cout << endl;
-	return 0;
-}
-
-void sqlcheck(int rc, char* zErrMsg)
-{
-	if (rc != SQLITE_OK)
-	{
-		cout << "SQL Error: " << zErrMsg << endl;
-		sqlite3_free(zErrMsg);
-	}
-}
-
 int main()
 {
-	sqlite3* db;
-	int rc = sqlite3_open("demo/demo1.db", &db);
-	sqlite3_stmt* stmt;
-	const char* unused;
-	rc = sqlite3_prepare_v2(db, "select ID from Socket", 100, &stmt, &unused);
-	int i;
-	while((i = sqlite3_step(stmt)) != SQLITE_DONE)
-	{
-		if (i == SQLITE_ROW)
-		{
-			cout << sqlite3_column_int64(stmt, 0);
-		}
-	}
-	sqlite3_finalize(stmt);
-	sqlite3_close(db);
-
-	//sqlite3* db;
-	char* zErrMsg = 0;
-
-	string dbloc = ":memory:";
-	cout << "Database: ";
-	cin >> dbloc;
-
-	/*rc = sqlite3_open(dbloc.c_str(), &db);
-
-	if(rc)
-	{
-		cout << rc << " | " << sqlite3_errmsg(db) << endl;
-	}
-
-	rc = sqlite3_exec(db, 
-		"insert into NodeTree values (0); " \
-		"insert into NodeTree values (1); ",
-		callback, (void*)"insert", &zErrMsg);
-	
-	rc = sqlite3_exec(db,
-		"select * from NodeTree; ", 
-		callback, (void*)"select", &zErrMsg);
-
-	sqlcheck(rc, zErrMsg);*/
 	/*int(*f2)(int) = [](int x) -> int {return x;};
 	Property prop = Property();
 	prop.set(f2);
@@ -79,8 +20,6 @@ int main()
 	//typedef Network::Synapse Synapse;
 	
 	cout << "1\n";
-
-	SQL* sql = new SQL(dbloc.c_str());
 	
 	cout << "2\n";
 
@@ -89,19 +28,22 @@ int main()
 	//node.push_back(new Node(0, 0));
 	//node.push_back(new Node(0, 1));	
 	//node.push_back(new Node(2, 2));
-	NodeTree nt = NodeTree(0, sql);
+
+	JSON json;
+
+	NodeTree nt = NodeTree(0, &json);
 	
 	cout << "3\n";
 
-	nt.init<Neuron, Synapse>(sql);
-	//node[0]->init<Neuron, Synapse>(sql);
-	//node[1]->init<Neuron, Synapse>(sql);
-	//node[2]->init<Neuron, Synapse>(sql);
+	nt.init<Neuron, Synapse>(&json);
+	//node[0]->init<Neuron, Synapse>(file);
+	//node[1]->init<Neuron, Synapse>(file);
+	//node[2]->init<Neuron, Synapse>(file);
 	
 	cout << "4\n";
 
 	//SimpComp sc = SimpComp(3, 0);
-	//sc.init<Neuron, Synapse>(sql);
+	//sc.init<Neuron, Synapse>(file);
 	
 	cout << "5\n";
 

@@ -2,12 +2,12 @@ IDIR=src
 ODIR=obj
 
 CXX=g++ -std=c++11
-CXXFLAGS= -I $(IDIR) -l sqlite3 -pthread
+CXXFLAGS= -I$(IDIR) -pthread
 
-_DEPS = property.h node.h networknode.h 
+_DEPS = json.hpp property.hpp node.hpp networknode.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = source.o
+_OBJ = json.o property.o node.o networknode.o source.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 networkmaker: $(OBJ)
