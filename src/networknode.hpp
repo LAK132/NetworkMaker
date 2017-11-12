@@ -1,6 +1,7 @@
 #include <vector>
 using std::vector;
 #include "node.hpp"
+#include "json.hpp"
 #include "property.hpp"
 
 #ifndef NETWORKNODE_H
@@ -37,7 +38,7 @@ public:
 	}
 };*/
 
-class Synapse
+class Synapse : public Data
 {
 private:
 	double val;
@@ -45,18 +46,22 @@ public:
 	double weight;
 	Socket *sock;
 	Synapse();
-	Synapse(Socket* s, Synapse data);
+	Synapse(Socket* s);
 	void set(double value);
 	double get();
+	void load(JSON& json);
+	void save(JSON& json);
 };
 
-class Neuron
+class Neuron : public Data
 {
 public:
 	Node* node;
 	Neuron();
-	Neuron(Node* n, Neuron data);
+	Neuron(Node* n);
 	void calc();
+	void load(JSON& json);
+	void save(JSON& json);
 };
 
 #endif

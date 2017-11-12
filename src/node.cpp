@@ -1,7 +1,6 @@
 #include "node.hpp"
 
-uint64_t strtoi64(const string str)
-{
+uint64_t strtoi64(const string str) {
 	uint64_t rtn = 0;
 	for (size_t i = 0; str[i] != 0; i++)
 	{
@@ -11,8 +10,7 @@ uint64_t strtoi64(const string str)
 	return rtn;
 }
 
-string i64tostr(uint64_t in)
-{
+string i64tostr(uint64_t in) {
 	string rtn = "";
 	do {
 		rtn = (char)((in % 10) + '0') + rtn;
@@ -22,30 +20,30 @@ string i64tostr(uint64_t in)
 	return rtn;
 }
 
-NodeTree::NodeTree(uint64_t ntid, JSON* json)
-{
+void Data::load(JSON& json){}
+
+void Data::save(JSON& json){}
+
+NodeTree::NodeTree(uint64_t ntid, JSON* json) {
     id = ntid;
-    if (json != 0) load(json);
+    if (json != 0) load(*json);
 }
 
-Node::Node(NodeTree* nt, uint64_t nid, JSON* json)
-{
+Node::Node(NodeTree* nt, uint64_t nid, JSON* json) {
     nodetree = nt;
     id = nid;
-    if (json != 0) load(json);
+    if (json != 0) load(*json);
 }
 
-Socket::Socket(Node* n, uint64_t sid, bool isIn, JSON* json)
-{
+Socket::Socket(Node* n, uint64_t sid, bool isIn, JSON* json) {
     node = n;
     id = sid;
     input = isIn;
     link = 0;
-    if (json != 0) load(json);
+    if (json != 0) load(*json);
 }
 
-Link::Link(Socket* f, Socket* t)
-{
+Link::Link(Socket* f, Socket* t) {
 	to = t;
 	t->link = this;
 	t->linked = true;
@@ -54,191 +52,128 @@ Link::Link(Socket* f, Socket* t)
 	f->linked = true;
 }
 
-Link::~Link()
-{
+Link::~Link() {
 	to->linked = false;
 	from->linked = false;
 }
 
-Node::~Node()
-{
+Node::~Node() {
 	for (auto it = input.begin(); it != input.end(); it++) delete *it;
 	for (auto it = output.begin(); it != output.end(); it++) delete *it;
 }
 
-Socket::~Socket()
-{
+Socket::~Socket() {
 	if (link != 0 && link->to == this) 
 	{
 		delete link;
 	}
 }
 
-Socket* Node::addSocket(bool isIn, JSON* json)
-{
+Socket* Node::addSocket(bool isIn, JSON* json) {
 	vector<Socket*>* sock = (isIn ? &input : &output);
 	Socket* rtn = new Socket(this, sock->size(), isIn, json);
 	sock->push_back(rtn);
 	return rtn;
 }
 
-inline Socket* Node::addInput(JSON* json) 
-{
+inline Socket* Node::addInput(JSON* json) {
     return addSocket(true, json);
 }
 
-inline Socket* Node::addOutput(JSON* json) 
-{
+inline Socket* Node::addOutput(JSON* json) {
     return addSocket(false, json);
 }
 
-void NodeTree::load(JSON* json)
-{
-	JSON& nodetree_j = (*json)("nodetree")[id];
+void NodeTree::load(JSON& nodetree_j) {
+	JSON& node_l = nodetree_j("node");
 
-	uint64_t numNodes = nodetree_j("node").arrSize();
+	uint64_t numNodes = node_l.arrSize();
 	node.resize(numNodes);
 	for (uint64_t i = 0; i < numNodes; i++)
 	{
-		node[i] = new Node(this, i, &nodetree_j);
+		node[i] = new Node(this, i, &node_l[i]);
 	}
 
-	JSON& lnkarr = nodetree_j("link");
-	uint64_t lsize = lnkarr.arrSize();
-	link.resize(lsize);
+	JSON& link_l = nodetree_j("link");
 
-	uint64_t lid = 0;
-	for (auto nit = node.begin(); nit != node.end(); nit++)
+	uint64_t numLinks = link_l.arrSize();
+	link.resize(numLinks);
+	for (uint64_t i = 0; i < numLinks; i++)
 	{
-		JSON& node_j = nodetree_j("node")[(*nit)->id];
-		for (auto sit = (*nit)->input.begin(); sit != (*nit)->input.end(); sit++)
-		{
-			JSON& socket_j = node_j("input")[(*sit)->id];
-
-			bool isLink = (*sit)->linked && lnkarr.size() > 0;
-			uint64_t linkid = 0;
-
-			while(isLink && !(lnkarr[linkid]("toNode").get<uint64_t>() == (*nit)->id &&
-							lnkarr[linkid]("toSocket").get<uint64_t>() == (*sit)->id)) 
-			{
-				linkid++;
-				if (linkid >= lnkarr.size()) isLink = false;
-			}
-
-			if(isLink)
-			{
-				JSON& link_j = nodetree_j("link")[linkid];
-				uint64_t fnid = link_j("fromNode").get<uint64_t>();
-				uint64_t fsid = link_j("fromSocket").get<uint64_t>();
-				if (node.size() > fnid && node[fnid]->output.size() > fsid)
-				{
-					link[lid++] = new Link(node[fnid]->output[fsid], (*sit));
-				}
-			}
-		}
+		JSON& link_j = link_l[i];
+		Socket* from = node[link_j("fromNode").get<uint64_t>()]->output[link_j("fromSocket").get<uint64_t>()];
+		Socket* to = node[link_j("toNode").get<uint64_t>()]->input[link_j("toSocket").get<uint64_t>()];
+		link[i] = new Link(from, to);
 	}
 }
 
-void Node::load(JSON* json)
-{
-	JSON& inputs_j = (*json)("node")[id]("input");
-	uint64_t numInputs = inputs_j.arrSize();
+void Node::load(JSON& node_j) {
+	JSON& inputs_l = node_j("input");
+	uint64_t numInputs = inputs_l.arrSize();
 	input.resize(numInputs);
 	for (uint64_t i = 0; i < numInputs; i++)
 	{
-		input[i] = new Socket(this, i, true, &inputs_j);
+		input[i] = new Socket(this, i, true, &inputs_l[i]);
 	}
 
-	JSON& outputs_j = (*json)("node")[id]("output");
-	uint64_t numOutputs = outputs_j.arrSize();
+	JSON& outputs_l = node_j("output");
+	uint64_t numOutputs = outputs_l.arrSize();
 	output.resize(numOutputs);
 	for (uint64_t i = 0; i < numOutputs; i++)
 	{
-		output[i] = new Socket(this, i, false, &outputs_j);
+		output[i] = new Socket(this, i, false, &outputs_l[i]);
 	}
 }
 
-void Socket::load(JSON* json)
-{
-	JSON& socket_j = (*json)[id];
-	input = socket_j("input").get<bool>();
+void Socket::load(JSON& socket_j) {
 	linked = socket_j("linked").get<bool>();
 }
 
-void NodeTree::save(JSON* json, size_t pos)
-{
-	id = pos;
-	JSON& nodetree_l = (*json)("nodetree");
-	if(nodetree_l.arrSize() <= id)
+void NodeTree::save(JSON& nodetree_j) {
+	JSON& node_l = nodetree_j("node");
+	for(size_t i = 0; i < node.size(); i++)
 	{
-		for(size_t i = nodetree_l.arrSize(); i <= id; i++)
-		{
-			nodetree_l.push_back(JSON());
-		}
+		Node* n = node[i];
+		n->id = i;
+		n->save(node_l.at(i));
 	}
-	JSON& nodetree_j = nodetree_l[id];
-	for(auto it = node.begin(); it != node.end(); it++)
+
+	//Links are saved seperately to ensure IDs have been reallocated correctly
+	JSON& link_l = nodetree_j("link");
+	for(size_t i = 0; i < link.size(); i++)
 	{
-		(*it)->save(&nodetree_j, distance(node.begin(), it));
-	}
-	for(auto it = link.begin(); it != link.end(); it++)
-	{
-		(*it)->save(&nodetree_j, distance(link.begin(), it));
+		Link* l = link[i];
+		l->id = i;
+		l->save(link_l.at(i));
 	}
 }
 
-void Node::save(JSON* json, size_t pos)
-{
-	id = pos;
-	JSON& node_l = (*json)("node");
-	if(node_l.arrSize() <= id)
-	{
-		for(size_t i = node_l.arrSize(); i <= id; i++)
-		{
-			node_l.push_back(JSON());
-		}
-	}
-	JSON& node_j = node_l[id];
-	node_j("data").set(data.getv());
+void Node::save(JSON& node_j) {
+	data.save(node_j);
 
-	for(auto it = input.begin(); it != input.end(); it++)
+	JSON& input_l = node_j("input");
+	for(size_t i = 0; i < input.size(); i++)
 	{
-		(*it)->save(&node_j("input"), distance(input.begin(), it));
+		Socket* s = input[i];
+		s->id = i;
+		s->save(input_l.at(i));
 	}
-	for(auto it = output.begin(); it != output.end(); it++)
+	JSON& output_l = node_j("output");
+	for(size_t i = 0; i < output.size(); i++)
 	{
-		(*it)->save(&node_j("output"), distance(output.begin(), it));
+		Socket* s = output[i];
+		s->id = i;
+		s->save(output_l.at(i));
 	}
 }
 
-void Socket::save(JSON* json, size_t pos)
-{
-	id = pos;
-	JSON& socket_l = (*json);
-	if(socket_l.arrSize() <= id)
-	{
-		for(size_t i = socket_l.arrSize(); i <= id; i++)
-		{
-			socket_l.push_back(JSON());
-		}
-	}
-	JSON& socket_j = (*json)[id];
-	socket_j("input").set(input);
+void Socket::save(JSON& socket_j) {
+	data.save(socket_j);
+
 	socket_j("linked").set(linked);
-	socket_j("data").set(data.getv());
 }
 
-void Link::save(JSON* json, size_t pos)
-{
-	JSON& link_l = (*json)("link");
-	if(link_l.arrSize() <= pos)
-	{
-		for(size_t i = link_l.arrSize(); i <= pos; i++)
-		{
-			link_l.push_back(JSON());
-		}
-	}
-	JSON& link_j = link_l[pos];
+void Link::save(JSON& link_j) {
 	link_j("toNode").set(to->node->id);
 	link_j("toSocket").set(to->id);
 	link_j("fromNode").set(from->node->id);

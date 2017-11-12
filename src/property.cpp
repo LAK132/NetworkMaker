@@ -2,23 +2,19 @@
 
 void noDel(void* p) {}
 
-Property::Property()
-{
+Property::Property() {
     isInit = false;
 }
 
-Property::~Property()
-{
+Property::~Property() {
     if (isInit) deleter(value);
 }
 
-size_t Property::size()
-{
+size_t Property::size() {
     return dsize;
 }
 
-vector<uint8_t> stringifyv(const vector<uint8_t>& str)
-{
+vector<uint8_t> stringifyv(const vector<uint8_t>& str) {
     vector<uint8_t> rtn(str.size()*2, 0);
 
     for(size_t i = 0, k = 0; i < str.size(); i++)
@@ -29,16 +25,14 @@ vector<uint8_t> stringifyv(const vector<uint8_t>& str)
 
     return rtn;
 }
-vector<uint8_t> Property::getv()
-{
+vector<uint8_t> Property::getv() {
     vector<uint8_t> str(dsize, 0);
     if(!isInit) return str;
     memcpy(&(str[0]), value, dsize);
     vector<uint8_t> rtn = stringifyv(str);
     return rtn;
 }
-vector<uint8_t> parsev(const vector<uint8_t>& str)
-{
+vector<uint8_t> parsev(const vector<uint8_t>& str) {
     vector<uint8_t> rtn(str.size()/2, 0);
 
     for(size_t i = 0, k = 0; i < rtn.size(); i++)
@@ -49,8 +43,7 @@ vector<uint8_t> parsev(const vector<uint8_t>& str)
 
     return rtn;
 }
-void Property::setv(const vector<uint8_t>& str)
-{
+void Property::setv(const vector<uint8_t>& str) {
     if(!isInit) return;
     vector<uint8_t> temp = parsev(str);
     memcpy(value, &(temp[0]), dsize);

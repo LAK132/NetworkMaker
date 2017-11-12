@@ -24,28 +24,32 @@ using std::flush;
 #define NODE_H
 
 class Node;
+class Socket;
 class Link;
 
-class NodeTree 
-{
+class Data {
+public:
+	virtual void load(JSON& json);
+	virtual void save(JSON& json);
+};
+
+class NodeTree : public Data {
 public:
 	uint64_t id;
 	vector<Node*> node;
 	vector<Link*> link;
 	NodeTree(uint64_t ntid, JSON* json);
-	void load(JSON* json);
 	template<typename N, typename S>
-	void init(JSON* json);
-	void save(JSON* json, size_t pos);
+	void init(JSON& nodetree_j);
+	void load(JSON& json);
+	void save(JSON& json);
 };
 
-class Socket;
-
-class Node {
+class Node : public Data {
 public:
 	NodeTree* nodetree;
 	uint64_t id;
-	Property data;
+	Data data;
 	vector<Socket*> input;
 	vector<Socket*> output;
 	Node(NodeTree* nt, uint64_t nid, JSON* json = 0);
@@ -53,35 +57,36 @@ public:
 	Socket* addSocket(bool isIn, JSON* json = 0);
 	inline Socket* addInput(JSON* json = 0);
 	inline Socket* addOutput(JSON* json = 0);
-	void load(JSON* json);
 	template<typename N, typename S>
-	void init(JSON* json);
-	void save(JSON* json, size_t pos);
+	void init(JSON& node_j);
+	void load(JSON& json);
+	void save(JSON& json);
 };
 
-class Socket {
+class Socket : public Data {
 public:
 	uint64_t id;
 	Node* node;
 	bool input;
 	Link* link;
 	bool linked = false;
-	Property data;
+	Data data;
 	Socket(Node* n, uint64_t sid, bool isIn, JSON* json = 0);
 	~Socket();
-	void load(JSON* json);
 	template<typename S>
-	void init(JSON* json);
-	void save(JSON* json, size_t pos);
+	void init(JSON& socket_j);
+	void load(JSON& json);
+	void save(JSON& json);
 };
 
-class Link {
-	public:
+class Link : public Data {
+public:
+	uint64_t id;
 	Socket* to;
 	Socket* from;
 	Link(Socket* f, Socket* t);
 	~Link();
-	void save(JSON* json, size_t pos);
+	void save(JSON& json);
 };
 
 #include "node_temp.hpp"

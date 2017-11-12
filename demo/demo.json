@@ -6,14 +6,12 @@
                     "data": "00",
                     "input": [
                         {
-                            "input": "01",
                             "linked": "00",
                             "data": "00"
                         }
                     ],
                     "output": [
                         {
-                            "input": "00",
                             "linked": "01",
                             "data": "00"
                         }
@@ -23,14 +21,12 @@
                     "data": "00",
                     "input": [
                         {
-                            "input": "01",
                             "linked": "00",
                             "data": "00"
                         }
                     ],
                     "output": [
                         {
-                            "input": "00",
                             "linked": "01",
                             "data": "00"
                         }
@@ -40,19 +36,16 @@
                     "data": "00",
                     "input": [
                         {
-                            "input": "01",
                             "linked": "01",
                             "data": "00"
                         },
                         {
-                            "input": "01",
                             "linked": "01",
                             "data": "00"
                         }
                     ],
                     "output": [
                         {
-                            "input": "00",
                             "linked": "00",
                             "data": "00"
                         }

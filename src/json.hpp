@@ -36,8 +36,10 @@ private:
 public:
 	JSON(const string& str = "");
 	JSON& operator[](size_t idx);
-	void push_back(JSON&& json);
+	inline void push_back(JSON&& json);
 	void push_back(JSON& json);
+	void resize(size_t idx);	//does not shrink arrdata
+	JSON& at(size_t idx);
 	JSON& operator()(const string& idx);
 	vector<uint8_t>& operator->();
 	size_t objSize();
@@ -46,20 +48,18 @@ public:
     friend ostream& operator<<(ostream& os, const JSON& json);
 	friend istream& operator>>(istream& is, JSON& json);
 	template<typename T>
-	T get()
-	{
+	T get() {
 		T t;
+		if (data.size() < sizeof(T)) return t;
 		memcpy(&t, &(data[0]), sizeof(T));
 		return t;
 	}
 	template<typename T>
-	void set(const T&& t)
-	{
+	void set(const T&& t) {
 		set(t);
 	}
 	template<typename T>
-	void set(const T& t)
-	{
+	void set(const T& t) {
 		data.resize(sizeof(T));
 		memcpy(&(data[0]), &t, sizeof(T));
 	}

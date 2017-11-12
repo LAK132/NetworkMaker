@@ -1,4 +1,3 @@
-//https://stackoverflow.com/questions/13980157/c-class-with-template-member-variable
 #include <stdlib.h>
 #include <string>
 #include <cstring>

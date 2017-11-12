@@ -1,22 +1,35 @@
 template<typename N, typename S>
-void NodeTree::init(JSON* json)
+void NodeTree::init(JSON& nodetree_j)
 {
-	for(auto it = node.begin(); it != node.end(); it++) (*it)->init<N, S>(json);
+	JSON& node_l = nodetree_j("node");
+	for(size_t i = 0; i < node_l.size(); i++)
+	{
+		node[i]->init<N, S>(node_l[i]);
+	}
 }
 
 template<typename N, typename S>
-void Node::init(JSON* json)
+void Node::init(JSON& node_j)
 {
-	N n = (*json)("nodetree")[nodetree->id]("node")[id]("data").get<N>();
-	data.init<N>(this, n);
+	N n = N(this);
+	n.load(node_j("data"));
 
-	for(auto it = input.begin(); it != input.end(); it++) (*it)->init<S>(json);
-	for(auto it = output.begin(); it != output.end(); it++) (*it)->init<S>(json);
+	JSON& input_l = node_j("input");
+	for(size_t i = 0; i < input_l.size(); i++)
+	{
+		input[i]->init<S>(input_l[i]);
+	}
+
+	JSON& output_l = node_j("output");
+	for(size_t i = 0; i < output_l.size(); i++)
+	{
+		output[i]->init<S>(output_l[i]);
+	}
 }
 
 template<typename S>
-void Socket::init(JSON* json)
+void Socket::init(JSON& socket_j)
 {
-	S s = (*json)("nodetree")[node->nodetree->id]("node")[node->id]((input ? "input" : "output"))[id]("data").get<S>();
-	data.init<S>(this, s);
+	S s = S(this);
+	s.load(socket_j("data"));
 }

@@ -1,7 +1,6 @@
 #include "json.hpp"
 
-JSON::JSON(const string& str)
-{
+JSON::JSON(const string& str) {
     objdata = map<string, JSON>();
     arrdata = vector<JSON>();
     data = vector<uint8_t>();
@@ -12,20 +11,32 @@ JSON::JSON(const string& str)
         st >> *this;
     }
 }
-JSON& JSON::operator[](size_t idx)       
-{ 
+
+JSON& JSON::operator[](size_t idx) { 
     return arrdata[idx]; 
 }
-void JSON::push_back(JSON&& json)
-{
+
+inline void JSON::push_back(JSON&& json) {
+    push_back(json);
+}
+
+void JSON::push_back(JSON& json) {
     arrdata.push_back(json);
 }
-void JSON::push_back(JSON& json)
-{
-    arrdata.push_back(json);
+
+void JSON::resize(size_t idx) {
+    while(arrSize() < idx)
+    {
+        push_back(JSON());
+    }
 }
-JSON& JSON::operator()(const string& idx)       
-{ 
+
+JSON& JSON::at(size_t idx) {
+    resize(idx);
+    return (*this)[idx];
+}
+
+JSON& JSON::operator()(const string& idx) { 
     try {
         return objdata.at(idx);
     } 
@@ -35,26 +46,26 @@ JSON& JSON::operator()(const string& idx)
     }
     return objdata[idx];
 }
-vector<uint8_t>& JSON::operator->()
-{
+
+vector<uint8_t>& JSON::operator->() {
     return data;
 }
-size_t JSON::objSize()
-{
+
+size_t JSON::objSize() {
     return objdata.size();
 }
-size_t JSON::arrSize()
-{
+
+size_t JSON::arrSize() {
     return arrdata.size();
 }
-size_t JSON::size()
-{
+
+size_t JSON::size() {
     if(objSize() > 0) {return objSize();}
     else if(arrSize() > 0) {return arrSize();}
     else {return data.size();}
 }
-string& stringify(string& str)
-{
+
+string& stringify(string& str) {
     //cout << "2 1 1 4 1" << endl;
     regex r("[\"\'\\0\\n\\t\\r\\\\]");
     //cout << "2 1 1 4 2" << endl;
@@ -96,8 +107,8 @@ string& stringify(string& str)
 
     return str;
 }
-string& parse(string& str)
-{
+
+string& parse(string& str) {
     string temp = str;
     str = "";
     regex r("(?:[\\\\]([^\\\\]))");
@@ -135,8 +146,7 @@ string& parse(string& str)
     return str;
 }
 
-ostream& operator<<(ostream& os, const JSON& json)
-{
+ostream& operator<<(ostream& os, const JSON& json) {
     //cout << "2 1\n";
     if (json.objdata.size() > 0)
     {
@@ -176,8 +186,7 @@ ostream& operator<<(ostream& os, const JSON& json)
     return os;
 }
 
-char skipto(istream& is, string delim)
-{
+char skipto(istream& is, string delim) {
     bool found = false;
     char c = 0;
     while(!found)
@@ -193,8 +202,7 @@ char skipto(istream& is, string delim)
     return c;
 }
 
-char skipover(istream& is, string delim)
-{
+char skipover(istream& is, string delim) {
     bool found = false;
     char c = 0;
     while(!found)
@@ -209,8 +217,7 @@ char skipover(istream& is, string delim)
     return c;
 }
 
-istream& operator>>(istream& is, JSON& json)
-{
+istream& operator>>(istream& is, JSON& json) {
     //cout << "1 1" << endl;
     json.objdata.clear();
     json.arrdata.clear();

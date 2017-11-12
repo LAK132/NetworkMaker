@@ -30,12 +30,13 @@ int main()
 	Neuron n;
 	Synapse s;
 
-	json("nodetree")[0]("node")[0]("data").set(n);
-	json("nodetree")[0]("node")[0]("input")[0]("input").set(true);
-	json("nodetree")[0]("node")[0]("input")[0]("data").set(s);
-	json("nodetree")[0]("node")[0]("output")[0]("input").set(false);
-	json("nodetree")[0]("node")[0]("output")[0]("linked").set(true);
-	json("nodetree")[0]("node")[0]("output")[0]("data").set(s);
+	JSON& nodetree_j = json("nodetree").at(0);
+	JSON& node_l = nodetree_j("node");
+
+	//node_l[0]("data").set(n);
+	//node_l[0]("input")[0]("data").set(s);
+	node_l[0]("output")[0]("linked").set(true);
+	//node_l[0]("output")[0]("data").set(s);
 
 	//cout << "1 A 1\n";
 	
@@ -44,38 +45,36 @@ int main()
 
 	//cout << "1 B\n";
 
-	json("nodetree")[0]("node")[1]("data").set(n);
-	json("nodetree")[0]("node")[1]("input")[0]("input").set(true);
-	json("nodetree")[0]("node")[1]("input")[0]("data").set(s);
-	json("nodetree")[0]("node")[1]("output")[0]("input").set(false);
-	json("nodetree")[0]("node")[1]("output")[0]("linked").set(true);
-	json("nodetree")[0]("node")[1]("output")[0]("data").set(s);
+	//node_l[1]("data").set(n);
+	//node_l[1]("input")[0]("data").set(s);
+	node_l[1]("output")[0]("input").set(false);
+	node_l[1]("output")[0]("linked").set(true);
+	//node_l[1]("output")[0]("data").set(s);
 
 	//cout << "1 C\n";
 	
-	json("nodetree")[0]("node")[2]("data").set(n);
-	json("nodetree")[0]("node")[2]("input")[0]("input").set(true);
-	json("nodetree")[0]("node")[2]("input")[0]("linked").set(true);
-	json("nodetree")[0]("node")[2]("input")[0]("data").set(s);
-	json("nodetree")[0]("node")[2]("input")[1]("input").set(true);
-	json("nodetree")[0]("node")[2]("input")[1]("linked").set(true);
-	json("nodetree")[0]("node")[2]("input")[1]("data").set(s);
-	json("nodetree")[0]("node")[2]("output")[0]("input").set(false);
-	json("nodetree")[0]("node")[2]("output")[0]("data").set(s);
+	//node_l[2]("data").set(n);
+	node_l[2]("input")[0]("linked").set(true);
+	//node_l[2]("input")[0]("data").set(s);
+	node_l[2]("input")[1]("linked").set(true);
+	//node_l[2]("input")[1]("data").set(s);
+	//node_l[2]("output")[0]("data").set(s);
 	
 	//cout << "1 D\n";
+
+	JSON& link_l = nodetree_j("link");
 		
-	json("nodetree")[0]("link")[0]("fromNode").set((uint64_t)0);
-	json("nodetree")[0]("link")[0]("fromSocket").set((uint64_t)0);
-	json("nodetree")[0]("link")[0]("toNode").set((uint64_t)2);
-	json("nodetree")[0]("link")[0]("toSocket").set((uint64_t)0);
+	link_l[0]("fromNode").set((uint64_t)0);
+	link_l[0]("fromSocket").set((uint64_t)0);
+	link_l[0]("toNode").set((uint64_t)2);
+	link_l[0]("toSocket").set((uint64_t)0);
 
 	//cout << "1 E\n";
 
-	json("nodetree")[0]("link")[1]("fromNode").set((uint64_t)1);
-	json("nodetree")[0]("link")[1]("fromSocket").set((uint64_t)0);
-	json("nodetree")[0]("link")[1]("toNode").set((uint64_t)2);
-	json("nodetree")[0]("link")[1]("toSocket").set((uint64_t)1);
+	link_l[1]("fromNode").set((uint64_t)1);
+	link_l[1]("fromSocket").set((uint64_t)0);
+	link_l[1]("toNode").set((uint64_t)2);
+	link_l[1]("toSocket").set((uint64_t)1);
 	
 	//cout << "2\n";
 
@@ -88,11 +87,20 @@ int main()
 	//node.push_back(new Node(0, 1));	
 	//node.push_back(new Node(2, 2));
 
-	NodeTree nt = NodeTree(0, &json);
-	
-	nt.init<Neuron, Synapse>(&json);
+	//cout << "3\n";
 
-	nt.save(&json, 0);
+	NodeTree nt = NodeTree(0, &nodetree_j);
+
+	//cout << "4\n";
+	
+	nt.init<Neuron, Synapse>(nodetree_j);
+
+	//cout << "5\n";
+
+	nt.id = 0;
+	nt.save(nodetree_j);
+
+	//cout << "5\n";
 
 	cout << json;
 
