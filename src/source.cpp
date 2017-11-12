@@ -27,9 +27,6 @@ int main()
 
 	//cout << "1 A\n";
 
-	Neuron n;
-	Synapse s;
-
 	JSON& nodetree_j = json("nodetree").at(0);
 	JSON& node_l = nodetree_j("node");
 
@@ -47,7 +44,7 @@ int main()
 
 	//node_l[1]("data").set(n);
 	//node_l[1]("input")[0]("data").set(s);
-	node_l[1]("output")[0]("input").set(false);
+	//node_l[1]("output")[0]("input").set(false);
 	node_l[1]("output")[0]("linked").set(true);
 	//node_l[1]("output")[0]("data").set(s);
 
@@ -78,24 +75,60 @@ int main()
 	
 	//cout << "2\n";
 
-	//cout << json;
+	NodeTree nt = NodeTree(0, 0);//&nodetree_j);
 
-	//cout << "2 A\n";
-	////cout << 1 << endl;
-	//vector<Node*> node;
-	//node.push_back(new Node(0, 0));
-	//node.push_back(new Node(0, 1));	
-	//node.push_back(new Node(2, 2));
+	nt.addNode();
+	nt.addNode();
+	nt.addNode();
+	nt.addNode();
+	nt.node[0]->addInput();
 
-	//cout << "3\n";
+	nt.node[0]->addOutput();
+	nt.node[1]->addInput();
+	nt.node[0]->output[0]->addLink(nt.node[1]->input[0]);
 
-	NodeTree nt = NodeTree(0, &nodetree_j);
+	nt.node[1]->addOutput();
+	nt.node[2]->addInput();
+	nt.node[1]->output[0]->addLink(nt.node[2]->input[0]);
+
+	nt.node[2]->addOutput();
+	nt.node[3]->addInput();
+	nt.node[2]->output[0]->addLink(nt.node[3]->input[0]);
+
+	nt.node[3]->addOutput();
 
 	//cout << "4\n";
 	
 	nt.init<Neuron, Synapse>(nodetree_j);
 
 	//cout << "5\n";
+
+	Synapse* s;
+	for(auto nit = nt.node.begin(); nit != nt.node.end(); nit++)
+	{
+		for(auto sit = (*nit)->input.begin(); sit != (*nit)->input.end(); sit++)
+		{
+			s = (Synapse*)(*sit)->data;
+			s->weight = 1.0;
+			s->set(1.0);
+		}
+		for(auto sit = (*nit)->output.begin(); sit != (*nit)->output.end(); sit++)
+		{
+			s = (Synapse*)(*sit)->data;
+			s->weight = 0.0;
+			s->set(1.0);
+		}
+	}
+
+	Neuron* n = (Neuron*)nt.node[3]->data;
+
+	//cout << "6\n";
+
+	n->calc();
+
+	//cout << "7\n";
+
+	//cout << "Result: " << ((Synapse*)nt.node[3]->output[0]->data)->get() << flush << endl;
 
 	nt.id = 0;
 	nt.save(nodetree_j);

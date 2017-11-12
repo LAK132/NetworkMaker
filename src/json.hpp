@@ -34,9 +34,11 @@ private:
 	vector<JSON> arrdata;
 	vector<uint8_t> data;
 public:
-	JSON(const string& str = "");
+	JSON();
+	JSON(const string& str);
+	void clear();
 	JSON& operator[](size_t idx);
-	inline void push_back(JSON&& json);
+	void push_back(JSON&& json);
 	void push_back(JSON& json);
 	void resize(size_t idx);	//does not shrink arrdata
 	JSON& at(size_t idx);

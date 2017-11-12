@@ -20,10 +20,6 @@ string i64tostr(uint64_t in) {
 	return rtn;
 }
 
-void Data::load(JSON& json){}
-
-void Data::save(JSON& json){}
-
 NodeTree::NodeTree(uint64_t ntid, JSON* json) {
     id = ntid;
     if (json != 0) load(*json);
@@ -52,14 +48,14 @@ Link::Link(Socket* f, Socket* t) {
 	f->linked = true;
 }
 
-Link::~Link() {
-	to->linked = false;
-	from->linked = false;
+NodeTree::~NodeTree() {
+	for (auto it = node.begin(); it != node.end(); it++) delete *it;
 }
 
 Node::~Node() {
 	for (auto it = input.begin(); it != input.end(); it++) delete *it;
 	for (auto it = output.begin(); it != output.end(); it++) delete *it;
+	delete data;
 }
 
 Socket::~Socket() {
@@ -67,6 +63,25 @@ Socket::~Socket() {
 	{
 		delete link;
 	}
+	delete data;
+}
+
+Link::~Link() {
+	to->linked = false;
+	from->linked = false;
+}
+
+Node* NodeTree::addNode(JSON* json) {
+	Node* rtn = new Node(this, node.size(), json);
+	node.push_back(rtn);
+	return rtn;
+}
+
+Link* NodeTree::addLink(Socket* from, Socket* to) {
+	if(from->input) return 0;
+	Link* rtn = new Link(from, to);
+	link.push_back(rtn);
+	return rtn;
 }
 
 Socket* Node::addSocket(bool isIn, JSON* json) {
@@ -76,12 +91,24 @@ Socket* Node::addSocket(bool isIn, JSON* json) {
 	return rtn;
 }
 
-inline Socket* Node::addInput(JSON* json) {
+Socket* Node::addInput(JSON* json) {
     return addSocket(true, json);
 }
 
-inline Socket* Node::addOutput(JSON* json) {
+Socket* Node::addOutput(JSON* json) {
     return addSocket(false, json);
+}
+
+Link* Socket::addLink(Socket* other) {
+	if(input == other->input) return 0;
+	if(input)
+	{
+		return node->nodetree->addLink(other, this);
+	}
+	else
+	{
+		return node->nodetree->addLink(this, other);
+	}
 }
 
 void NodeTree::load(JSON& nodetree_j) {
@@ -129,7 +156,10 @@ void Socket::load(JSON& socket_j) {
 	linked = socket_j("linked").get<bool>();
 }
 
+void Link::load(JSON& link_j) {}
+
 void NodeTree::save(JSON& nodetree_j) {
+	nodetree_j.clear();
 	JSON& node_l = nodetree_j("node");
 	for(size_t i = 0; i < node.size(); i++)
 	{
@@ -149,7 +179,7 @@ void NodeTree::save(JSON& nodetree_j) {
 }
 
 void Node::save(JSON& node_j) {
-	data.save(node_j);
+	data->save(node_j("data"));
 
 	JSON& input_l = node_j("input");
 	for(size_t i = 0; i < input.size(); i++)
@@ -168,7 +198,7 @@ void Node::save(JSON& node_j) {
 }
 
 void Socket::save(JSON& socket_j) {
-	data.save(socket_j);
+	data->save(socket_j("data"));
 
 	socket_j("linked").set(linked);
 }

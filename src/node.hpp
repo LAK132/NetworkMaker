@@ -29,8 +29,8 @@ class Link;
 
 class Data {
 public:
-	virtual void load(JSON& json);
-	virtual void save(JSON& json);
+	virtual void load(JSON& json) = 0;
+	virtual void save(JSON& json) = 0;
 };
 
 class NodeTree : public Data {
@@ -38,29 +38,38 @@ public:
 	uint64_t id;
 	vector<Node*> node;
 	vector<Link*> link;
+
 	NodeTree(uint64_t ntid, JSON* json);
+	~NodeTree();
+
+	Node* addNode(JSON* json = 0);
+	Link* addLink(Socket* from, Socket* to);
+
 	template<typename N, typename S>
 	void init(JSON& nodetree_j);
-	void load(JSON& json);
-	void save(JSON& json);
+	void load(JSON& nodetree_j);
+	void save(JSON& nodetree_j);
 };
 
 class Node : public Data {
 public:
 	NodeTree* nodetree;
 	uint64_t id;
-	Data data;
+	Data* data;
 	vector<Socket*> input;
 	vector<Socket*> output;
+
 	Node(NodeTree* nt, uint64_t nid, JSON* json = 0);
 	~Node();
+
 	Socket* addSocket(bool isIn, JSON* json = 0);
-	inline Socket* addInput(JSON* json = 0);
-	inline Socket* addOutput(JSON* json = 0);
+	Socket* addInput(JSON* json = 0);
+	Socket* addOutput(JSON* json = 0);
+
 	template<typename N, typename S>
 	void init(JSON& node_j);
-	void load(JSON& json);
-	void save(JSON& json);
+	void load(JSON& node_j);
+	void save(JSON& node_j);
 };
 
 class Socket : public Data {
@@ -70,13 +79,17 @@ public:
 	bool input;
 	Link* link;
 	bool linked = false;
-	Data data;
+	Data* data;
+
 	Socket(Node* n, uint64_t sid, bool isIn, JSON* json = 0);
 	~Socket();
+
+	Link* addLink(Socket* other);
+
 	template<typename S>
 	void init(JSON& socket_j);
-	void load(JSON& json);
-	void save(JSON& json);
+	void load(JSON& socket_j);
+	void save(JSON& socket_j);
 };
 
 class Link : public Data {
@@ -86,7 +99,8 @@ public:
 	Socket* from;
 	Link(Socket* f, Socket* t);
 	~Link();
-	void save(JSON& json);
+	void load(JSON& link_j);
+	void save(JSON& link_j);
 };
 
 #include "node_temp.hpp"

@@ -11,18 +11,16 @@ void Neuron::load(JSON& neuron_j) {
 }
 
 void Neuron::save(JSON& neuron_j) {
-    
+	//cout << "A " << endl;
 }
 
 void Neuron::calc() {
     double temp = 0.0;
     for (auto it = node->input.begin(); it != node->input.end(); it++)
     {
-        Synapse* p = (Synapse*)&((*it)->data);
-        temp += p->get();
+        temp += ((Synapse*)((*it)->data))->get();
     }
-    Synapse* p = (Synapse*)&(node->output[0]->data);
-    p->set(temp);
+    ((Synapse*)(node->output[0]->data))->set(temp);
 }
 
 Synapse::Synapse(){}
@@ -46,14 +44,18 @@ void Synapse::set(double value) {
 }
 
 double Synapse::get() {
-    if (sock->link == 0 || sock->link->from == sock)
+    if (sock->link == 0)
     {
-        return val * weight;
+        return val;
+    }
+    else if (sock->link->from == sock)
+    {
+        ((Neuron*)(sock->link->from->node->data))->calc();
+        return val;
     }
     else
     {
-        Synapse* other = (Synapse*)&(sock->link->from->data);
-        double rtn = other->get();
+        double rtn = ((Synapse*)(sock->link->from->data))->get();
         return rtn * weight;
     }
 }

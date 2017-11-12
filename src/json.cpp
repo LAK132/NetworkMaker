@@ -1,10 +1,13 @@
 #include "json.hpp"
 
-JSON::JSON(const string& str) {
+JSON::JSON() {
     objdata = map<string, JSON>();
     arrdata = vector<JSON>();
     data = vector<uint8_t>();
+    //clear();
+}
 
+JSON::JSON(const string& str) : JSON() {
     if (str.length() > 0) 
     {
         istringstream st(str);
@@ -12,11 +15,17 @@ JSON::JSON(const string& str) {
     }
 }
 
+void JSON::clear() {
+    objdata.clear();
+    arrdata.clear();
+    data.clear();
+}
+
 JSON& JSON::operator[](size_t idx) { 
     return arrdata[idx]; 
 }
 
-inline void JSON::push_back(JSON&& json) {
+void JSON::push_back(JSON&& json) {
     push_back(json);
 }
 
@@ -25,7 +34,7 @@ void JSON::push_back(JSON& json) {
 }
 
 void JSON::resize(size_t idx) {
-    while(arrSize() < idx)
+    while(arrSize() <= idx)
     {
         push_back(JSON());
     }
@@ -41,8 +50,7 @@ JSON& JSON::operator()(const string& idx) {
         return objdata.at(idx);
     } 
     catch (const out_of_range& oor) {
-        JSON j = JSON();
-        objdata.emplace(idx, j);
+        objdata.emplace(idx, JSON());
     }
     return objdata[idx];
 }
@@ -147,7 +155,7 @@ string& parse(string& str) {
 }
 
 ostream& operator<<(ostream& os, const JSON& json) {
-    //cout << "2 1\n";
+    //cout << "2 1\n" << json.objdata.size() << std::flush << endl;
     if (json.objdata.size() > 0)
     {
         //cout << "2 2\n";

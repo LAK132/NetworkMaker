@@ -4,7 +4,7 @@ ODIR=obj
 CXX=g++ -std=c++11
 CXXFLAGS= -I$(IDIR) -pthread
 
-_DEPS = json.hpp property.hpp node.hpp networknode.hpp
+_DEPS = json.hpp property.hpp property_temp.hpp node.hpp node_temp.hpp networknode.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = json.o property.o node.o networknode.o source.o
