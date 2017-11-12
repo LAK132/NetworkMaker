@@ -17,8 +17,7 @@ void Property::init(Ta... args)
     if (isInit) deleter(value);
     deleter = del<T>;
     value = new T(args...);
-    dsize = sizeof(T);
-    psize = sizeof(T*);
+    dsize = sizeof(T)/sizeof(uint8_t);
     isInit = true;
 }
 

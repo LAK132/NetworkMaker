@@ -5,7 +5,7 @@ Neuron::Neuron(){}
 Neuron::Neuron(Node* n, Neuron data)
 {
     node = n;
-    cout << "init neuron " << node << endl;
+    //cout << "init neuron " << node << endl;
 }
 
 void Neuron::calc()
@@ -26,7 +26,7 @@ Synapse::Synapse(Socket* s, Synapse data)
     sock = s;
     weight = data.weight;
     val = data.val;
-    cout << "init synapse " << sock << " " << weight << " " << val << endl;
+    //cout << "init synapse " << sock << " " << weight << " " << val << endl;
 }
 
 void Synapse::set(double value)

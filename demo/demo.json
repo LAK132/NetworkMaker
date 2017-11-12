@@ -1,0 +1,78 @@
+{
+    "nodetree": [
+        {
+            "node": [
+                {
+                    "data": "00",
+                    "input": [
+                        {
+                            "input": "01",
+                            "linked": "00",
+                            "data": "00"
+                        }
+                    ],
+                    "output": [
+                        {
+                            "input": "00",
+                            "linked": "01",
+                            "data": "00"
+                        }
+                    ]
+                },
+                {
+                    "data": "00",
+                    "input": [
+                        {
+                            "input": "01",
+                            "linked": "00",
+                            "data": "00"
+                        }
+                    ],
+                    "output": [
+                        {
+                            "input": "00",
+                            "linked": "01",
+                            "data": "00"
+                        }
+                    ]
+                },
+                {
+                    "data": "00",
+                    "input": [
+                        {
+                            "input": "01",
+                            "linked": "01",
+                            "data": "00"
+                        },
+                        {
+                            "input": "01",
+                            "linked": "01",
+                            "data": "00"
+                        }
+                    ],
+                    "output": [
+                        {
+                            "input": "00",
+                            "linked": "00",
+                            "data": "00"
+                        }
+                    ]
+                }
+            ],
+            "link": [
+                {
+                    "fromNode": "00",
+                    "fromSocket": "01",
+                    "toNode": "02",
+                    "toSocket": "00"
+                },
+                {
+                    "fromNode": "01",
+                    "fromSocket": "01",
+                    "toNode": "02",
+                    "toSocket": "01"
+                }
+            ]
+        }
+    ]
+}

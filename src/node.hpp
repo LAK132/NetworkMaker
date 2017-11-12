@@ -9,11 +9,13 @@ using std::to_string;
 using std::map;
 #include <thread>
 using std::thread;
-
+#include <iterator>
+using std::distance;
 #include <iostream>
 using std::cin;
 using std::cout;
 using std::endl;
+using std::flush;
 
 #include "json.hpp"
 #include "property.hpp"
@@ -34,8 +36,7 @@ public:
 	void load(JSON* json);
 	template<typename N, typename S>
 	void init(JSON* json);
-	template<typename N, typename S>
-	void save(JSON* json);
+	void save(JSON* json, size_t pos);
 };
 
 class Socket;
@@ -44,9 +45,9 @@ class Node {
 public:
 	NodeTree* nodetree;
 	uint64_t id;
+	Property data;
 	vector<Socket*> input;
 	vector<Socket*> output;
-	Property data;
 	Node(NodeTree* nt, uint64_t nid, JSON* json = 0);
 	~Node();
 	Socket* addSocket(bool isIn, JSON* json = 0);
@@ -55,8 +56,7 @@ public:
 	void load(JSON* json);
 	template<typename N, typename S>
 	void init(JSON* json);
-	template<typename N, typename S>
-	void save(JSON* json);
+	void save(JSON* json, size_t pos);
 };
 
 class Socket {
@@ -65,14 +65,14 @@ public:
 	Node* node;
 	bool input;
 	Link* link;
+	bool linked = false;
 	Property data;
 	Socket(Node* n, uint64_t sid, bool isIn, JSON* json = 0);
 	~Socket();
 	void load(JSON* json);
 	template<typename S>
 	void init(JSON* json);
-	template<typename S>
-	void save(JSON* json);
+	void save(JSON* json, size_t pos);
 };
 
 class Link {
@@ -80,7 +80,8 @@ class Link {
 	Socket* to;
 	Socket* from;
 	Link(Socket* f, Socket* t);
-	~Link(){}
+	~Link();
+	void save(JSON* json, size_t pos);
 };
 
 #include "node_temp.hpp"

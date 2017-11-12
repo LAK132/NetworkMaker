@@ -1,15 +1,22 @@
 //https://stackoverflow.com/questions/13980157/c-class-with-template-member-variable
 #include <stdlib.h>
+#include <string>
+#include <cstring>
+using std::memcpy;
+#include <vector>
+using std::vector;
 
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
+vector<uint8_t> stringifyv(const vector<uint8_t>& str);
+vector<uint8_t> parsev(const vector<uint8_t>& str);
+
 class Property
 {
 private:
-	size_t dsize;
-	size_t psize;
-	bool isInit;
+	size_t dsize = 0;
+	bool isInit = false;
 	void* value;
 	void(*deleter)(void*);
 public:
@@ -30,6 +37,8 @@ public:
 	T& getr();
 	template<typename T>
 	T* getp();
+	vector<uint8_t> getv();
+	void setv(const vector<uint8_t>& str);
 };
 
 #include "property_temp.hpp"

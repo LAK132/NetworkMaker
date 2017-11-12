@@ -14,60 +14,120 @@ int main()
 	/*int(*f2)(int) = [](int x) -> int {return x;};
 	Property prop = Property();
 	prop.set(f2);
-	cout << prop.get<int(*)(int)>()(10);*/
+	//cout << prop.get<int(*)(int)>()(10);*/
 	
 	//typedef Network::Neuron Neuron;
 	//typedef Network::Synapse Synapse;
-	
-	cout << "1\n";
-	
-	cout << "2\n";
 
-	//cout << 1 << endl;
+	JSON json = JSON();
+	
+	//cout << "1\n";
+	
+	cin >> json;
+
+	//cout << "1 A\n";
+
+	Neuron n;
+	Synapse s;
+
+	json("nodetree")[0]("node")[0]("data").set(n);
+	json("nodetree")[0]("node")[0]("input")[0]("input").set(true);
+	json("nodetree")[0]("node")[0]("input")[0]("data").set(s);
+	json("nodetree")[0]("node")[0]("output")[0]("input").set(false);
+	json("nodetree")[0]("node")[0]("output")[0]("linked").set(true);
+	json("nodetree")[0]("node")[0]("output")[0]("data").set(s);
+
+	//cout << "1 A 1\n";
+	
+	//cout << json("nodetree")[0]("node")[0]("socket")[0]("input").get<bool>() << endl;
+	//cout << json("nodetree")[0]("node")[0]("socket")[1]("input").get<bool>() << endl;
+
+	//cout << "1 B\n";
+
+	json("nodetree")[0]("node")[1]("data").set(n);
+	json("nodetree")[0]("node")[1]("input")[0]("input").set(true);
+	json("nodetree")[0]("node")[1]("input")[0]("data").set(s);
+	json("nodetree")[0]("node")[1]("output")[0]("input").set(false);
+	json("nodetree")[0]("node")[1]("output")[0]("linked").set(true);
+	json("nodetree")[0]("node")[1]("output")[0]("data").set(s);
+
+	//cout << "1 C\n";
+	
+	json("nodetree")[0]("node")[2]("data").set(n);
+	json("nodetree")[0]("node")[2]("input")[0]("input").set(true);
+	json("nodetree")[0]("node")[2]("input")[0]("linked").set(true);
+	json("nodetree")[0]("node")[2]("input")[0]("data").set(s);
+	json("nodetree")[0]("node")[2]("input")[1]("input").set(true);
+	json("nodetree")[0]("node")[2]("input")[1]("linked").set(true);
+	json("nodetree")[0]("node")[2]("input")[1]("data").set(s);
+	json("nodetree")[0]("node")[2]("output")[0]("input").set(false);
+	json("nodetree")[0]("node")[2]("output")[0]("data").set(s);
+	
+	//cout << "1 D\n";
+		
+	json("nodetree")[0]("link")[0]("fromNode").set((uint64_t)0);
+	json("nodetree")[0]("link")[0]("fromSocket").set((uint64_t)0);
+	json("nodetree")[0]("link")[0]("toNode").set((uint64_t)2);
+	json("nodetree")[0]("link")[0]("toSocket").set((uint64_t)0);
+
+	//cout << "1 E\n";
+
+	json("nodetree")[0]("link")[1]("fromNode").set((uint64_t)1);
+	json("nodetree")[0]("link")[1]("fromSocket").set((uint64_t)0);
+	json("nodetree")[0]("link")[1]("toNode").set((uint64_t)2);
+	json("nodetree")[0]("link")[1]("toSocket").set((uint64_t)1);
+	
+	//cout << "2\n";
+
+	//cout << json;
+
+	//cout << "2 A\n";
+	////cout << 1 << endl;
 	//vector<Node*> node;
 	//node.push_back(new Node(0, 0));
 	//node.push_back(new Node(0, 1));	
 	//node.push_back(new Node(2, 2));
 
-	JSON json;
-
 	NodeTree nt = NodeTree(0, &json);
 	
-	cout << "3\n";
-
 	nt.init<Neuron, Synapse>(&json);
+
+	nt.save(&json, 0);
+
+	cout << json;
+
 	//node[0]->init<Neuron, Synapse>(file);
 	//node[1]->init<Neuron, Synapse>(file);
 	//node[2]->init<Neuron, Synapse>(file);
 	
-	cout << "4\n";
+	//cout << "5\n";
 
 	//SimpComp sc = SimpComp(3, 0);
 	//sc.init<Neuron, Synapse>(file);
 	
-	cout << "5\n";
+	//cout << "6\n";
 
-	//cout << "simplicial complex " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
+	////cout << "simplicial complex " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
 	
-	cout << "6\n";
+	//cout << "6\n";
 	
-	//cout << 3 << endl;
+	////cout << 3 << endl;
 	//node[0]->output->data.getr<Synapse>().set(1.0);
 	//node[1]->output->data.getr<Synapse>().set(2.0);
 
 	//sc.node[0]->output->data.getr<Synapse>().set(1.0);
 	//sc.node[1]->output->data.getr<Synapse>().set(2.0);
 	
-	//cout << 4 << endl;
+	////cout << 4 << endl;
 	//node[2]->calc();
 	//node[2]->data.getr<Neuron>().calc();
 	
 	//sc.node[2]->data.getr<Neuron>().calc();
 
-	//cout << 5 << endl;
-	//cout << "hello node " << node[2]->output->data.getr<Synapse>().get() << endl;
-	//cout << "simplicial " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
-	//cout << "node " << nt.node[2]->output->data.getr<Synapse>().get() << endl;
+	////cout << 5 << endl;
+	////cout << "hello node " << node[2]->output->data.getr<Synapse>().get() << endl;
+	////cout << "simplicial " << sc.node[2]->output->data.getr<Synapse>().get() << endl;
+	////cout << "node " << nt.node[2]->output->data.getr<Synapse>().get() << endl;
 	int junk;
 	cin >> junk;
 	return 0;
