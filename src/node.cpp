@@ -20,8 +20,11 @@ string i64tostr(uint64_t in) {
 	return rtn;
 }
 
+map<string, NodeMaker> MakeNode;
+map<string, SocketMaker> MakeSocket;
+
 NodeTree::NodeTree(uint64_t ntid, JSON* json) {
-    id = ntid;
+	id = ntid;
     if (json != 0) load(*json);
 }
 
@@ -55,7 +58,6 @@ NodeTree::~NodeTree() {
 Node::~Node() {
 	for (auto it = input.begin(); it != input.end(); it++) delete *it;
 	for (auto it = output.begin(); it != output.end(); it++) delete *it;
-	delete data;
 }
 
 Socket::~Socket() {
@@ -63,7 +65,6 @@ Socket::~Socket() {
 	{
 		delete link;
 	}
-	delete data;
 }
 
 Link::~Link() {
@@ -71,10 +72,14 @@ Link::~Link() {
 	from->linked = false;
 }
 
-Node* NodeTree::addNode(JSON* json) {
-	Node* rtn = new Node(this, node.size(), json);
+Node* NodeTree::addNode(const string& nodeType, JSON* json) {
+	Node* rtn = MakeNode[nodeType](this, node.size(), json);
 	node.push_back(rtn);
 	return rtn;
+}
+
+Node* NodeTree::addNode(JSON* json) {
+	return addNode((*json)("type").get<string>(), json);
 }
 
 Link* NodeTree::addLink(Socket* from, Socket* to) {
@@ -84,19 +89,31 @@ Link* NodeTree::addLink(Socket* from, Socket* to) {
 	return rtn;
 }
 
-Socket* Node::addSocket(bool isIn, JSON* json) {
+Socket* Node::addSocket(bool isIn, const string& sockType, JSON* json) {
 	vector<Socket*>* sock = (isIn ? &input : &output);
-	Socket* rtn = new Socket(this, sock->size(), isIn, json);
+	Socket* rtn = MakeSocket[sockType](this, sock->size(), isIn, json);
 	sock->push_back(rtn);
 	return rtn;
 }
 
+Socket* Node::addSocket(bool isIn, JSON* json) {
+	return addSocket(isIn, (*json)("type").get<string>(), json);
+}
+
+Socket* Node::addInput(const string& sockType, JSON* json) {
+    return addSocket(true, sockType, json);
+}
+
 Socket* Node::addInput(JSON* json) {
-    return addSocket(true, json);
+    return addInput((*json)("type").get<string>(), json);
+}
+
+Socket* Node::addOutput(const string& sockType, JSON* json) {
+    return addSocket(false, sockType, json);
 }
 
 Socket* Node::addOutput(JSON* json) {
-    return addSocket(false, json);
+    return addOutput((*json)("type").get<string>(), json);
 }
 
 Link* Socket::addLink(Socket* other) {
@@ -118,7 +135,8 @@ void NodeTree::load(JSON& nodetree_j) {
 	node.resize(numNodes);
 	for (uint64_t i = 0; i < numNodes; i++)
 	{
-		node[i] = new Node(this, i, &node_l[i]);
+		JSON& node_j = node_l[i];
+		node[i] = MakeNode[node_j("type").get<string>()](this, i, &node_j);
 	}
 
 	JSON& link_l = nodetree_j("link");
@@ -135,25 +153,31 @@ void NodeTree::load(JSON& nodetree_j) {
 }
 
 void Node::load(JSON& node_j) {
-	JSON& inputs_l = node_j("input");
-	uint64_t numInputs = inputs_l.arrSize();
+	type = node_j("type").get<string>();
+	JSON& input_l = node_j("input");
+	uint64_t numInputs = input_l.arrSize();
 	input.resize(numInputs);
 	for (uint64_t i = 0; i < numInputs; i++)
 	{
-		input[i] = new Socket(this, i, true, &inputs_l[i]);
+		JSON& input_j = input_l[i];
+		input[i] = MakeSocket[input_j("type").get<string>()](this, i, true, &input_j);
 	}
 
-	JSON& outputs_l = node_j("output");
-	uint64_t numOutputs = outputs_l.arrSize();
+	JSON& output_l = node_j("output");
+	uint64_t numOutputs = output_l.arrSize();
 	output.resize(numOutputs);
 	for (uint64_t i = 0; i < numOutputs; i++)
 	{
-		output[i] = new Socket(this, i, false, &outputs_l[i]);
+		JSON& output_j = output_l[i];
+		output[i] = MakeSocket[output_j("type").get<string>()](this, i, false, &output_j);
 	}
+	loadData(node_j("data"));
 }
 
 void Socket::load(JSON& socket_j) {
+	type = socket_j("type").get<string>();
 	linked = socket_j("linked").get<bool>();
+	loadData(socket_j("data"));
 }
 
 void Link::load(JSON& link_j) {}
@@ -179,8 +203,8 @@ void NodeTree::save(JSON& nodetree_j) {
 }
 
 void Node::save(JSON& node_j) {
-	data->save(node_j("data"));
-
+	node_j("type").set(type);
+	saveData(node_j("data"));
 	JSON& input_l = node_j("input");
 	for(size_t i = 0; i < input.size(); i++)
 	{
@@ -198,9 +222,9 @@ void Node::save(JSON& node_j) {
 }
 
 void Socket::save(JSON& socket_j) {
-	data->save(socket_j("data"));
-
+	socket_j("type").set(type);
 	socket_j("linked").set(linked);
+	saveData(socket_j("data"));
 }
 
 void Link::save(JSON& link_j) {

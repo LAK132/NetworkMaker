@@ -1,40 +1,28 @@
 #include "networknode.hpp"
 
-Neuron::Neuron(){}
-
-Neuron::Neuron(Node* n) {
-    node = n;
-}
-
-void Neuron::load(JSON& neuron_j) {
+void Neuron::loadData(JSON& neuron_j) {
     
 }
 
-void Neuron::save(JSON& neuron_j) {
+void Neuron::saveData(JSON& neuron_j) {
 	//cout << "A " << endl;
 }
 
-void Neuron::calc() {
+void Neuron::poll() {
     double temp = 0.0;
-    for (auto it = node->input.begin(); it != node->input.end(); it++)
+    for (auto it = input.begin(); it != input.end(); it++)
     {
-        temp += ((Synapse*)((*it)->data))->get();
+        temp += ((Synapse*)(*it))->get();
     }
-    ((Synapse*)(node->output[0]->data))->set(temp);
+    ((Synapse*)output[0])->set(temp);
 }
 
-Synapse::Synapse(){}
-
-Synapse::Synapse(Socket* s) {
-    sock = s;
-}
-
-void Synapse::load(JSON& synapse_j) {
+void Synapse::loadData(JSON& synapse_j) {
     weight = synapse_j("weight").get<double>();
     val = synapse_j("val").get<double>();   
 }
 
-void Synapse::save(JSON& synapse_j) {
+void Synapse::saveData(JSON& synapse_j) {
     synapse_j("weight").set(weight);
     synapse_j("val").set(val);
 }
@@ -44,18 +32,18 @@ void Synapse::set(double value) {
 }
 
 double Synapse::get() {
-    if (sock->link == 0)
+    if (link == 0)
     {
         return val;
     }
-    else if (sock->link->from == sock)
+    else if (link->from == this)
     {
-        ((Neuron*)(sock->link->from->node->data))->calc();
+        link->from->node->poll();
         return val;
     }
     else
     {
-        double rtn = ((Synapse*)(sock->link->from->data))->get();
+        double rtn = ((Synapse*)(link->from))->get();
         return rtn * weight;
     }
 }

@@ -2,7 +2,7 @@ IDIR=src
 ODIR=obj
 
 CXX=g++ -std=c++11
-CXXFLAGS= -I$(IDIR) -pthread
+CXXFLAGS= -I$(IDIR) `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
 
 _DEPS = json.hpp property.hpp property_temp.hpp node.hpp node_temp.hpp networknode.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))

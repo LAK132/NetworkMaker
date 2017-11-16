@@ -38,30 +38,26 @@ public:
 	}
 };*/
 
-class Synapse : public Data
+class Synapse : public Socket
 {
 private:
 	double val;
 public:
 	double weight;
-	Socket *sock;
-	Synapse();
-	Synapse(Socket* s);
+	using Socket::Socket;
 	void set(double value);
 	double get();
-	void load(JSON& json);
-	void save(JSON& json);
+	void loadData(JSON& json);
+	void saveData(JSON& json);
 };
 
-class Neuron : public Data
+class Neuron : public Node
 {
 public:
-	Node* node;
-	Neuron();
-	Neuron(Node* n);
-	void calc();
-	void load(JSON& json);
-	void save(JSON& json);
+	using Node::Node;
+	void poll();
+	void loadData(JSON& json);
+	void saveData(JSON& json);
 };
 
 #endif
