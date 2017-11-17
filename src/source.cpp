@@ -2,34 +2,27 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-//#include <gtk/gtk.h>
 #include "networknode.hpp"
 #include "node.hpp"
 #include "json.hpp"
 #include "property.hpp"
+#include <SFML/Graphics.hpp>
 
 using namespace std;
 
-/*static void activate (GtkApplication* app, gpointer user_data) {
-  GtkWidget *window;
-  window = gtk_application_window_new (app);
-  gtk_window_set_title (GTK_WINDOW (window), "Window");
-  gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
-  gtk_widget_show_all (window);
-}*/
-
 int main(int argc, char **argv)
 {
-	/*GtkApplication *app;
-	int status;
+    // Create the main window
+    sf::RenderWindow app(sf::VideoMode(800, 600), "SFML window");
 
-	app = gtk_application_new ("com.kicodora.networkmaker", G_APPLICATION_FLAGS_NONE);
-	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-	status = g_application_run (G_APPLICATION (app), argc, argv);
-	g_object_unref (app);*/
+    // Load a sprite to display
+    sf::Texture texture;
+    if (!texture.loadFromFile("cb.bmp"))
+        return EXIT_FAILURE;
+    sf::Sprite sprite(texture);
 
 	JSON json = JSON();
-	
+
 	//cin >> json;
 
 	JSON& nodetree_j = json("nodetree").at(0);
@@ -41,7 +34,7 @@ int main(int argc, char **argv)
 	//node_l[0]("output")[0]("data").set(s);
 
 	//cout << "1 A 1\n";
-	
+
 	//cout << json("nodetree")[0]("node")[0]("socket")[0]("input").get<bool>() << endl;
 	//cout << json("nodetree")[0]("node")[0]("socket")[1]("input").get<bool>() << endl;
 
@@ -54,18 +47,18 @@ int main(int argc, char **argv)
 	//node_l[1]("output")[0]("data").set(s);
 
 	//cout << "1 C\n";
-	
+
 	//node_l[2]("data").set(n);
 	node_l[2]("input")[0]("linked").set(true);
 	//node_l[2]("input")[0]("data").set(s);
 	node_l[2]("input")[1]("linked").set(true);
 	//node_l[2]("input")[1]("data").set(s);
 	//node_l[2]("output")[0]("data").set(s);
-	
+
 	//cout << "1 D\n";
 
 	JSON& link_l = nodetree_j("link");
-		
+
 	link_l[0]("fromNode").set((uint64_t)0);
 	link_l[0]("fromSocket").set((uint64_t)0);
 	link_l[0]("toNode").set((uint64_t)2);
@@ -77,7 +70,7 @@ int main(int argc, char **argv)
 	link_l[1]("fromSocket").set((uint64_t)0);
 	link_l[1]("toNode").set((uint64_t)2);
 	link_l[1]("toSocket").set((uint64_t)1);*/
-	
+
 	//cout << "2\n";
 
 	MakeNode.emplace("neuron", NodeType<Neuron>);
@@ -132,7 +125,27 @@ int main(int argc, char **argv)
 
 	cout << json << flush;
 
-	int junk;
-	cin >> junk;
-	return 0;
+	// Start the game loop
+    while (app.isOpen())
+    {
+        // Process events
+        sf::Event event;
+        while (app.pollEvent(event))
+        {
+            // Close window : exit
+            if (event.type == sf::Event::Closed)
+                app.close();
+        }
+
+        // Clear screen
+        app.clear();
+
+        // Draw the sprite
+        app.draw(sprite);
+
+        // Update the window
+        app.display();
+    }
+
+    return EXIT_SUCCESS;
 }
