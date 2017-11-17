@@ -8,7 +8,7 @@ JSON::JSON() {
 }
 
 JSON::JSON(const string& str) : JSON() {
-    if (str.length() > 0) 
+    if (str.length() > 0)
     {
         istringstream st(str);
         st >> *this;
@@ -21,8 +21,23 @@ void JSON::clear() {
     data.clear();
 }
 
-JSON& JSON::operator[](size_t idx) { 
-    return arrdata[idx]; 
+JSON& JSON::operator[](size_t idx) {
+    return arrdata[idx];
+}
+
+JSON& JSON::at(size_t idx) {
+    resize(idx);
+    return (*this)[idx];
+}
+
+JSON& JSON::operator()(const string& idx) {
+    try {
+        return objdata.at(idx);
+    }
+    catch (const out_of_range& oor) {
+        objdata.emplace(idx, JSON());
+    }
+    return objdata[idx];
 }
 
 void JSON::push_back(JSON&& json) {
@@ -38,21 +53,6 @@ void JSON::resize(size_t idx) {
     {
         push_back(JSON());
     }
-}
-
-JSON& JSON::at(size_t idx) {
-    resize(idx);
-    return (*this)[idx];
-}
-
-JSON& JSON::operator()(const string& idx) { 
-    try {
-        return objdata.at(idx);
-    } 
-    catch (const out_of_range& oor) {
-        objdata.emplace(idx, JSON());
-    }
-    return objdata[idx];
 }
 
 vector<uint8_t>& JSON::operator->() {
@@ -71,6 +71,16 @@ size_t JSON::size() {
     if(objSize() > 0) {return objSize();}
     else if(arrSize() > 0) {return arrSize();}
     else {return data.size();}
+}
+
+bool JSON::has(const string& idx){
+    try {
+        objdata.at(idx);
+    }
+    catch (const out_of_range& oor) {
+        return false;
+    }
+    return true;
 }
 
 string& stringify(string& str) {
@@ -256,7 +266,7 @@ istream& operator>>(istream& is, JSON& json) {
 
             is >> json.objdata[name];
             //cout << "Name: " << name << " JSON: " << json.objdata[name] << endl;
-            
+
             c = skipover(is, ",}");
         }
         //cout << "}" << endl;
@@ -270,7 +280,7 @@ istream& operator>>(istream& is, JSON& json) {
 
             json.arrdata.push_back(JSON());
             is >> json.arrdata.back();
-            
+
             c = skipover(is, ",]");
         }
         //cout << "]" << endl;
@@ -279,7 +289,7 @@ istream& operator>>(istream& is, JSON& json) {
     {
         //cout << "\"" << endl;
         skipover(is, "\"");
-        
+
         c = is.get();
         vector<uint8_t> str(0, 0);
         bool esc = false;
