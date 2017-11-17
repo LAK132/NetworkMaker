@@ -20,8 +20,20 @@ string i64tostr(uint64_t in) {
 	return rtn;
 }
 
-map<string, NodeMaker> MakeNode;
-map<string, SocketMaker> MakeSocket;
+class DefaultNode : public Node {
+    using Node::Node;
+    void loadData(JSON& data_j){}
+	void saveData(JSON& data_j){}
+	void poll(){}
+};
+class DefaultSocket : public Socket {
+    using Socket::Socket;
+    void loadData(JSON& data_j){}
+	void saveData(JSON& data_j){}
+};
+
+map<string, NodeMaker> MakeNode = {{"", NodeType<DefaultNode>}};
+map<string, SocketMaker> MakeSocket = {{"", SocketType<DefaultSocket>}};
 
 NodeTree::NodeTree(uint64_t ntid, JSON* json) {
 	id = ntid;
@@ -61,7 +73,7 @@ Node::~Node() {
 }
 
 Socket::~Socket() {
-	if (link != 0 && link->to == this) 
+	if (link != 0 && link->to == this)
 	{
 		delete link;
 	}
@@ -79,7 +91,7 @@ Node* NodeTree::addNode(const string& nodeType, JSON* json) {
 }
 
 Node* NodeTree::addNode(JSON* json) {
-	return addNode((*json)("type").get<string>(), json);
+	return addNode((*json).init<string>("type", ""), json);
 }
 
 Link* NodeTree::addLink(Socket* from, Socket* to) {
@@ -97,7 +109,7 @@ Socket* Node::addSocket(bool isIn, const string& sockType, JSON* json) {
 }
 
 Socket* Node::addSocket(bool isIn, JSON* json) {
-	return addSocket(isIn, (*json)("type").get<string>(), json);
+	return addSocket(isIn, (*json).init<string>("type", ""), json);
 }
 
 Socket* Node::addInput(const string& sockType, JSON* json) {
@@ -105,7 +117,7 @@ Socket* Node::addInput(const string& sockType, JSON* json) {
 }
 
 Socket* Node::addInput(JSON* json) {
-    return addInput((*json)("type").get<string>(), json);
+    return addInput((*json).init<string>("type", ""), json);
 }
 
 Socket* Node::addOutput(const string& sockType, JSON* json) {
@@ -113,7 +125,7 @@ Socket* Node::addOutput(const string& sockType, JSON* json) {
 }
 
 Socket* Node::addOutput(JSON* json) {
-    return addOutput((*json)("type").get<string>(), json);
+    return addOutput((*json).init<string>("type", ""), json);
 }
 
 Link* Socket::addLink(Socket* other) {
@@ -136,7 +148,7 @@ void NodeTree::load(JSON& nodetree_j) {
 	for (uint64_t i = 0; i < numNodes; i++)
 	{
 		JSON& node_j = node_l[i];
-		node[i] = MakeNode[node_j("type").get<string>()](this, i, &node_j);
+		node[i] = MakeNode[node_j.init<string>("type", "")](this, i, &node_j);
 	}
 
 	JSON& link_l = nodetree_j("link");
@@ -153,14 +165,14 @@ void NodeTree::load(JSON& nodetree_j) {
 }
 
 void Node::load(JSON& node_j) {
-	type = node_j("type").get<string>();
+    type = node_j.init<string>("type", "");
 	JSON& input_l = node_j("input");
 	uint64_t numInputs = input_l.arrSize();
 	input.resize(numInputs);
 	for (uint64_t i = 0; i < numInputs; i++)
 	{
 		JSON& input_j = input_l[i];
-		input[i] = MakeSocket[input_j("type").get<string>()](this, i, true, &input_j);
+		input[i] = MakeSocket[input_j.init("type", (string)"")](this, i, true, &input_j);
 	}
 
 	JSON& output_l = node_j("output");
@@ -169,14 +181,14 @@ void Node::load(JSON& node_j) {
 	for (uint64_t i = 0; i < numOutputs; i++)
 	{
 		JSON& output_j = output_l[i];
-		output[i] = MakeSocket[output_j("type").get<string>()](this, i, false, &output_j);
+		output[i] = MakeSocket[output_j.init("type", (string)"")](this, i, false, &output_j);
 	}
 	loadData(node_j("data"));
 }
 
 void Socket::load(JSON& socket_j) {
-	type = socket_j("type").get<string>();
-	linked = socket_j("linked").get<bool>();
+	type = socket_j.init<string>("type", "");
+	linked = socket_j.init<bool>("linked", false);
 	loadData(socket_j("data"));
 }
 
