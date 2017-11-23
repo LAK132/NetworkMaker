@@ -43,7 +43,8 @@ NodeTree::NodeTree(uint64_t ntid, JSON* json) {
 Node::Node(NodeTree* nt, uint64_t nid, JSON* json) {
     nodetree = nt;
     id = nid;
-    if (json != 0) load(*json);
+    if (json != 0)
+        load(*json);
 }
 
 Socket::Socket(Node* n, uint64_t sid, bool isIn, JSON* json) {
@@ -86,6 +87,7 @@ Link::~Link() {
 
 Node* NodeTree::addNode(const string& nodeType, JSON* json) {
 	Node* rtn = MakeNode[nodeType](this, node.size(), json);
+	if(strcmp(rtn->type.c_str(), "")) rtn->type = nodeType;
 	node.push_back(rtn);
 	return rtn;
 }
@@ -104,6 +106,7 @@ Link* NodeTree::addLink(Socket* from, Socket* to) {
 Socket* Node::addSocket(bool isIn, const string& sockType, JSON* json) {
 	vector<Socket*>* sock = (isIn ? &input : &output);
 	Socket* rtn = MakeSocket[sockType](this, sock->size(), isIn, json);
+	if(strcmp(rtn->type.c_str(), "")) rtn->type = sockType;
 	sock->push_back(rtn);
 	return rtn;
 }

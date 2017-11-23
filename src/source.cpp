@@ -1,3 +1,4 @@
+//Node backend
 #include <iostream>
 #include <stdio.h>
 #include <string>
@@ -6,6 +7,15 @@
 #include "node.hpp"
 #include "json.hpp"
 #include "property.hpp"
+
+//Graphics
+#include "imgui.h"
+#include "imgui-SFML.h"
+
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics.hpp>
 
 using namespace std;
@@ -13,13 +23,15 @@ using namespace std;
 int main(int argc, char **argv)
 {
     // Create the main window
-    sf::RenderWindow app(sf::VideoMode(800, 600), "SFML window");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Dear ImGUI + SFML");
+    window.setFramerateLimit(60);
+    ImGui::SFML::Init(window);
 
     // Load a sprite to display
-    sf::Texture texture;
+    /*sf::Texture texture;
     if (!texture.loadFromFile("cb.bmp"))
         return EXIT_FAILURE;
-    sf::Sprite sprite(texture);
+    sf::Sprite sprite(texture);*/
 
 	JSON json = JSON();
 
@@ -125,27 +137,35 @@ int main(int argc, char **argv)
 
 	cout << json << flush;
 
+
+	sf::CircleShape shape(100.f);
+	shape.setFillColor(sf::Color::Green);
+
+	sf::Clock deltaClock;
 	// Start the game loop
-    while (app.isOpen())
+    while (window.isOpen())
     {
         // Process events
         sf::Event event;
-        while (app.pollEvent(event))
+        while (window.pollEvent(event))
         {
+            ImGui::SFML::ProcessEvent(event);
             // Close window : exit
             if (event.type == sf::Event::Closed)
-                app.close();
+                window.close();
         }
 
-        // Clear screen
-        app.clear();
+        ImGui::SFML::Update(window, deltaClock.restart());
 
-        // Draw the sprite
-        app.draw(sprite);
+        ImGui::Begin("Hello World!");
+        ImGui::Button("Look at this pretty button");
+        ImGui::End();
 
-        // Update the window
-        app.display();
+        window.clear();
+        window.draw(shape);
+        ImGui::SFML::Render(window);
+        window.display();
     }
 
-    return EXIT_SUCCESS;
+    ImGui::SFML::Shutdown();
 }

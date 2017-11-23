@@ -18,8 +18,8 @@ using std::endl;
 using std::flush;
 #include <memory>
 using std::unique_ptr;
-#include <SFML/Graphics.hpp>
-using sf::Vector2f;
+//#include <SFML/Graphics.hpp>
+//using sf::Vector2f;
 
 #include "json.hpp"
 #include "property.hpp"
