@@ -23,6 +23,7 @@ using std::unique_ptr;
 
 #include "json.hpp"
 #include "property.hpp"
+#include "prop.hpp"
 
 #ifndef NODE_H
 #define NODE_H
@@ -43,7 +44,7 @@ template <typename T>
 Node* NodeType(NodeTree* nt, uint64_t nid, JSON* json);
 extern map<string, NodeMaker> MakeNode;
 
-class NodeTree : public Data {
+class NodeTree : public Data, public Prop {
 public:
 	uint64_t id;			//Unique ID of this NodeTree in its JSON stream
 	vector<Node*> node;		//Pointers to all Nodes in this NodeTree
@@ -58,6 +59,7 @@ public:
 
 	void load(JSON& nodetree_j);	//Load NodeTree data from JSON stream
 	void save(JSON& nodetree_j);	//Save NodeTree data to JSON stream
+	void render();
 };
 
 typedef Socket*(*SocketMaker)(Node*, uint64_t, bool, JSON*);
@@ -65,7 +67,7 @@ template <typename T>
 Socket* SocketType(Node* n, uint64_t sid, bool isIn, JSON* json);
 extern map<string, SocketMaker> MakeSocket;
 
-class Node : public Data {
+class Node : public Data, public Prop {
 public:
 	string type;			//The type name of this Node instance
 	NodeTree* nodetree;		//Pointer to the parent NodeTree
@@ -88,13 +90,15 @@ public:
 
 	void load(JSON& node_j);	//Load Node data from JSON stream
 	void save(JSON& node_j);	//Save Node data to JSON stream
+	void render();
 
 	virtual void loadData(JSON& data_j) =0;	//Load Derived Node class data from JSON stream
 	virtual void saveData(JSON& data_j) =0;	//Save Derived Node class data tp JSON stream
 	virtual void poll() =0;					//Poll the Node to recalculate its outputs
+	virtual void draw() =0;
 };
 
-class Socket : public Data {
+class Socket : public Data, public Prop {
 public:
 	string type;
 	uint64_t id;
@@ -110,12 +114,14 @@ public:
 
 	void load(JSON& socket_j);	//Load Socket data from JSON stream
 	void save(JSON& socket_j);	//Save Socket data to JSON stream
+	void render();
 
 	virtual void loadData(JSON& data_j) =0;	//Load Derived Socket class data from JSON stream
 	virtual void saveData(JSON& data_j) =0;	//Save Derived Socket class data to JSON stream
+	virtual void draw() =0;
 };
 
-class Link : public Data {
+class Link : public Data, public Prop {
 public:
 	uint64_t id;
 	Socket* to;
@@ -124,6 +130,7 @@ public:
 	~Link();
 	void load(JSON& link_j);	//Load Link data from JSON stream
 	void save(JSON& link_j);	//Save Link data to JSON stream
+	void render();
 };
 
 #include "node_temp.hpp"

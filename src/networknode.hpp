@@ -49,15 +49,17 @@ public:
 	double get();
 	void loadData(JSON& json);
 	void saveData(JSON& json);
+	void draw();
 };
 
 class Neuron : public Node
 {
 public:
 	using Node::Node;
-	void poll();
 	void loadData(JSON& json);
 	void saveData(JSON& json);
+	void poll();
+	void draw();
 };
 
 #endif

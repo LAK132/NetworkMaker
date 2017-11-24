@@ -25,11 +25,13 @@ class DefaultNode : public Node {
     void loadData(JSON& data_j){}
 	void saveData(JSON& data_j){}
 	void poll(){}
+	void draw(){}
 };
 class DefaultSocket : public Socket {
     using Socket::Socket;
     void loadData(JSON& data_j){}
 	void saveData(JSON& data_j){}
+	void draw(){}
 };
 
 map<string, NodeMaker> MakeNode = {{"", NodeType<DefaultNode>}};
@@ -247,4 +249,46 @@ void Link::save(JSON& link_j) {
 	link_j("toSocket").set(to->id);
 	link_j("fromNode").set(from->node->id);
 	link_j("fromSocket").set(from->id);
+}
+
+void NodeTree::render(){
+    const string name = "NodeTree" + to_string(id);
+    if(ImGui::TreeNode(name.c_str())) {
+        for(auto it = node.begin(), end = node.end(); it != end; ++it){
+            (*it)->render();
+        }
+        for(auto it = link.begin(), end = link.end(); it != end; ++it){
+            (*it)->render();
+        }
+        ImGui::TreePop();
+    }
+}
+
+void Node::render() {
+    const string name = "Node" + to_string(id);
+    if(ImGui::TreeNode(name.c_str())) {
+        draw();
+        for(auto it = input.begin(), end = input.end(); it != end; ++it){
+            (*it)->render();
+        }
+        for(auto it = output.begin(), end = output.end(); it != end; ++it){
+            (*it)->render();
+        }
+        ImGui::TreePop();
+    }
+}
+
+void Socket::render() {
+    const string name = (input?"SocketIn":"SocketOut") + to_string(id);
+    if(ImGui::TreeNode(name.c_str())) {
+        draw();
+        ImGui::TreePop();
+    }
+}
+
+void Link::render() {
+    const string name = "Link" + to_string(id);
+    if(ImGui::TreeNode(name.c_str())) {
+        ImGui::TreePop();
+    }
 }

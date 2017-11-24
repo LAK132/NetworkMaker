@@ -140,9 +140,11 @@ int main(int argc, char **argv)
 	cout << json << flush;
 
 
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
+	//sf::CircleShape shape(100.f);
+	//shape.setFillColor(sf::Color::Green);
 
+
+    bool testWindow;
 	sf::Clock deltaClock;
 	// Start the game loop
     while (window.isOpen())
@@ -159,12 +161,19 @@ int main(int argc, char **argv)
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
+        ImGui::ShowTestWindow(&testWindow);
+
+
         ImGui::Begin("Hello World!");
-        ImGui::Button("Look at this pretty button");
+            n->poll();
+            nt.render();
+            /*if(ImGui::Button("Look at this pretty button")){
+                window.close();
+            }*/
         ImGui::End();
 
         window.clear();
-        window.draw(shape);
+        //window.draw(shape);
         ImGui::SFML::Render(window);
         window.display();
     }
