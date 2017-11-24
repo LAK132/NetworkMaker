@@ -49,7 +49,7 @@ public:
 	double get();
 	void loadData(JSON& json);
 	void saveData(JSON& json);
-	void draw();
+	void draw(bool& updt);
 };
 
 class Neuron : public Node
@@ -59,7 +59,7 @@ public:
 	void loadData(JSON& json);
 	void saveData(JSON& json);
 	void poll();
-	void draw();
+	void draw(bool& updt);
 };
 
 #endif

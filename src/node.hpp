@@ -59,7 +59,7 @@ public:
 
 	void load(JSON& nodetree_j);	//Load NodeTree data from JSON stream
 	void save(JSON& nodetree_j);	//Save NodeTree data to JSON stream
-	void render();
+	bool render();
 };
 
 typedef Socket*(*SocketMaker)(Node*, uint64_t, bool, JSON*);
@@ -90,12 +90,12 @@ public:
 
 	void load(JSON& node_j);	//Load Node data from JSON stream
 	void save(JSON& node_j);	//Save Node data to JSON stream
-	void render();
+	bool render();
 
 	virtual void loadData(JSON& data_j) =0;	//Load Derived Node class data from JSON stream
 	virtual void saveData(JSON& data_j) =0;	//Save Derived Node class data tp JSON stream
 	virtual void poll() =0;					//Poll the Node to recalculate its outputs
-	virtual void draw() =0;
+	virtual void draw(bool& updt) =0;
 };
 
 class Socket : public Data, public Prop {
@@ -114,11 +114,11 @@ public:
 
 	void load(JSON& socket_j);	//Load Socket data from JSON stream
 	void save(JSON& socket_j);	//Save Socket data to JSON stream
-	void render();
+	bool render();
 
 	virtual void loadData(JSON& data_j) =0;	//Load Derived Socket class data from JSON stream
 	virtual void saveData(JSON& data_j) =0;	//Save Derived Socket class data to JSON stream
-	virtual void draw() =0;
+	virtual void draw(bool& updt) =0;
 };
 
 class Link : public Data, public Prop {
@@ -130,7 +130,7 @@ public:
 	~Link();
 	void load(JSON& link_j);	//Load Link data from JSON stream
 	void save(JSON& link_j);	//Save Link data to JSON stream
-	void render();
+	bool render();
 };
 
 #include "node_temp.hpp"

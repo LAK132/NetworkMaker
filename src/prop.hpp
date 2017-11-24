@@ -7,7 +7,7 @@ class Prop {
 private:
 protected:
 public:
-    virtual void render() =0;
+    virtual bool render() =0;
 };
 
 #endif // PROP_H

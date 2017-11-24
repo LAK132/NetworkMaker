@@ -17,7 +17,7 @@ void Neuron::poll() {
     ((Synapse*)output[0])->set(temp);
 }
 
-void Neuron::draw() {
+void Neuron::draw(bool& updt) {
 
 }
 
@@ -38,7 +38,7 @@ void Synapse::set(double value) {
 double Synapse::get() {
     if (link == 0)
     {
-        return val;
+        return (input ? val * weight : val);
     }
     else if (link->from == this)
     {
@@ -47,37 +47,41 @@ double Synapse::get() {
     }
     else
     {
-        double rtn = ((Synapse*)(link->from))->get();
-        return rtn * weight;
+        val = ((Synapse*)(link->from))->get();
+        return val * weight;
     }
 }
 
-void Synapse::draw() {
+void Synapse::draw(bool& updt) {
     string str = "Value: ";
     str += to_string(val);
     ImGui::Text(str.c_str());
-    if(!linked) {
-        ImGui::SameLine();
-        if(ImGui::Button("+##val")) {
-            val += 0.1;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("-##val")) {
-            val -= 0.1;
-        }
-    }
-
     if(input) {
+        if(!linked) {
+            ImGui::SameLine();
+            if(ImGui::Button("+##val")) {
+                val += 0.1;
+                updt = true;
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("-##val")) {
+                val -= 0.1;
+                updt = true;
+            }
+        }
+
         str = "Weight: ";
         str += to_string(weight);
         ImGui::Text(str.c_str());
         ImGui::SameLine();
         if(ImGui::Button("+##weight")) {
             weight += 0.1;
+            updt = true;
         }
         ImGui::SameLine();
         if(ImGui::Button("-##weight")) {
             weight -= 0.1;
+            updt = true;
         }
     }
 }

@@ -165,8 +165,9 @@ int main(int argc, char **argv)
 
 
         ImGui::Begin("Hello World!");
-            n->poll();
-            nt.render();
+            if(nt.render()){
+                n->poll();
+            }
             /*if(ImGui::Button("Look at this pretty button")){
                 window.close();
             }*/

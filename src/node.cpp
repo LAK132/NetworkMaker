@@ -25,13 +25,13 @@ class DefaultNode : public Node {
     void loadData(JSON& data_j){}
 	void saveData(JSON& data_j){}
 	void poll(){}
-	void draw(){}
+	void draw(bool&){}
 };
 class DefaultSocket : public Socket {
     using Socket::Socket;
     void loadData(JSON& data_j){}
 	void saveData(JSON& data_j){}
-	void draw(){}
+	void draw(bool&){}
 };
 
 map<string, NodeMaker> MakeNode = {{"", NodeType<DefaultNode>}};
@@ -251,44 +251,54 @@ void Link::save(JSON& link_j) {
 	link_j("fromSocket").set(from->id);
 }
 
-void NodeTree::render(){
+bool NodeTree::render(){
+    bool updt = false;
     const string name = "NodeTree" + to_string(id);
     if(ImGui::TreeNode(name.c_str())) {
         for(auto it = node.begin(), end = node.end(); it != end; ++it){
-            (*it)->render();
+            updt |= (*it)->render();
         }
         for(auto it = link.begin(), end = link.end(); it != end; ++it){
-            (*it)->render();
+            updt |= (*it)->render();
         }
         ImGui::TreePop();
     }
+    return updt;
 }
 
-void Node::render() {
+bool Node::render() {
+    bool updt = false;
     const string name = "Node" + to_string(id);
     if(ImGui::TreeNode(name.c_str())) {
-        draw();
+        draw(updt);
         for(auto it = input.begin(), end = input.end(); it != end; ++it){
-            (*it)->render();
+            updt |= (*it)->render();
         }
         for(auto it = output.begin(), end = output.end(); it != end; ++it){
-            (*it)->render();
+            updt |= (*it)->render();
         }
         ImGui::TreePop();
     }
+    return updt;
 }
 
-void Socket::render() {
+bool Socket::render() {
+    bool updt = false;
     const string name = (input?"SocketIn":"SocketOut") + to_string(id);
     if(ImGui::TreeNode(name.c_str())) {
-        draw();
+        draw(updt);
         ImGui::TreePop();
     }
+    return updt;
 }
 
-void Link::render() {
+bool Link::render() {
+    bool updt = false;
     const string name = "Link" + to_string(id);
     if(ImGui::TreeNode(name.c_str())) {
+        updt |= from->render();
+        updt |= to->render();
         ImGui::TreePop();
     }
+    return updt;
 }
