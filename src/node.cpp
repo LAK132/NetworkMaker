@@ -37,6 +37,10 @@ class DefaultSocket : public Socket {
 map<string, NodeMaker> MakeNode = {{"", NodeType<DefaultNode>}};
 map<string, SocketMaker> MakeSocket = {{"", SocketType<DefaultSocket>}};
 
+NodeGraph::NodeGraph(NodeTree* nt) {
+	nodeTree = nt;
+}
+
 NodeTree::NodeTree(uint64_t ntid, JSON* json) {
 	id = ntid;
     if (json != 0) load(*json);
@@ -147,6 +151,7 @@ Link* Socket::addLink(Socket* other) {
 
 void NodeTree::load(JSON& nodetree_j) {
 	JSON& node_l = nodetree_j("node");
+    name = nodetree_j.init<string>("name", "NodeTree " + to_string(id));
 
 	uint64_t numNodes = node_l.arrSize();
 	node.resize(numNodes);
@@ -170,7 +175,10 @@ void NodeTree::load(JSON& nodetree_j) {
 }
 
 void Node::load(JSON& node_j) {
-    type = node_j.init<string>("type", "");
+	type = node_j.init<string>("type", "");
+    name = node_j.init<string>("name", "Node " + to_string(id));
+	pos.x = node_j("pos").init<float>(0, 0.0f);
+	pos.y = node_j("pos").init<float>(1, 0.0f);
 	JSON& input_l = node_j("input");
 	uint64_t numInputs = input_l.arrSize();
 	input.resize(numInputs);
@@ -193,6 +201,7 @@ void Node::load(JSON& node_j) {
 
 void Socket::load(JSON& socket_j) {
 	type = socket_j.init<string>("type", "");
+    name = socket_j.init<string>("name", "Socket " + to_string(id));
 	linked = socket_j.init<bool>("linked", false);
 	loadData(socket_j("data"));
 }
@@ -221,6 +230,8 @@ void NodeTree::save(JSON& nodetree_j) {
 
 void Node::save(JSON& node_j) {
 	node_j("type").set(type);
+	node_j("pos").at(0).set(pos.x);
+	node_j("pos").at(1).set(pos.y);
 	saveData(node_j("data"));
 	JSON& input_l = node_j("input");
 	for(size_t i = 0; i < input.size(); i++)
@@ -251,54 +262,147 @@ void Link::save(JSON& link_j) {
 	link_j("fromSocket").set(from->id);
 }
 
-bool NodeTree::render(){
+bool NodeGraph::render(ImDrawList* drawList, ImVec2 offset) {
+	bool updt = false;
+	ImGui::BeginGroup();
+	ImGui::Text("Node Graph");
+	offset = ImGui::GetCursorScreenPos();
+	ImGui::BeginChild("scrolling_region", ImVec2(0,0), true, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoMove);
+	ImGui::PushItemWidth(120.0f);
+
+	if (showGrid)
+    {
+        ImU32 GRID_COLOR = ImColor(200,200,200,40);
+        float GRID_SZ = 64.0f;
+        ImVec2 win_pos = offset;
+        ImVec2 canvas_sz = ImGui::GetWindowSize();
+        for (float x = fmodf(-scrolling.x,GRID_SZ); x < canvas_sz.x; x += GRID_SZ)
+            drawList->AddLine(ImVec2(x,0.0f)+win_pos, ImVec2(x,canvas_sz.y)+win_pos, GRID_COLOR);
+        for (float y = fmodf(-scrolling.y,GRID_SZ); y < canvas_sz.y; y += GRID_SZ)
+            drawList->AddLine(ImVec2(0.0f,y)+win_pos, ImVec2(canvas_sz.x,y)+win_pos, GRID_COLOR);
+    }
+
+	offset = offset-scrolling;
+
+	updt |= nodeTree->render(drawList, offset);
+
+	if(ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(1, 0.0f)) {
+		scrolling -= ImGui::GetIO().MouseDelta;
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::EndChild();
+	ImGui::EndGroup();
+	return updt;
+}
+
+bool NodeTree::render(ImDrawList* drawList, ImVec2 offset) {
     bool updt = false;
-    const string name = "NodeTree" + to_string(id);
-    if(ImGui::TreeNode(name.c_str())) {
+	drawList->ChannelsSplit(2);
+
+	drawList->ChannelsSetCurrent(1); //Foreground
+	for(auto it = node.begin(), end = node.end(); it != end; ++it){
+		updt |= (*it)->render(drawList, offset);
+	}
+
+	drawList->ChannelsSetCurrent(0); //Background
+	for(auto it = link.begin(), end = link.end(); it != end; ++it){
+		updt |= (*it)->render(drawList, offset);
+	}
+
+	/*const string name = "NodeTree" + to_string(id);
+    if(ImGui::TreeNode("NodeTree", "NodeTree%d", id)) {
+		drawList->ChannelsSetCurrent(1); //Foreground
         for(auto it = node.begin(), end = node.end(); it != end; ++it){
-            updt |= (*it)->render();
-        }
+            updt |= (*it)->render(drawList, offset);
+		}
+
+		drawList->ChannelsSetCurrent(0); //Background
         for(auto it = link.begin(), end = link.end(); it != end; ++it){
-            updt |= (*it)->render();
+            updt |= (*it)->render(drawList, offset);
         }
         ImGui::TreePop();
-    }
+    }*/
+	drawList->ChannelsMerge();
     return updt;
 }
 
-bool Node::render() {
-    bool updt = false;
-    const string name = "Node" + to_string(id);
-    if(ImGui::TreeNode(name.c_str())) {
-        draw(updt);
-        for(auto it = input.begin(), end = input.end(); it != end; ++it){
-            updt |= (*it)->render();
-        }
-        for(auto it = output.begin(), end = output.end(); it != end; ++it){
-            updt |= (*it)->render();
-        }
-        ImGui::TreePop();
+bool Node::render(ImDrawList* drawList, ImVec2 offset) {
+	bool updt = false;
+	ImGui::PushID(id);
+	offset = offset + pos;
+	//const ImVec2 currPos = pos + offset;
+    bool oldAnyActive = ImGui::IsAnyItemActive();
+	ImGui::SetCursorScreenPos(offset + padding);
+
+	ImGui::BeginGroup(); // Lock horizontal position
+	ImGui::Text(name.c_str());
+	//ImGui::Separator();
+    draw(updt);
+    for(auto it = input.begin(), end = input.end(); it != end; ++it) {
+        updt |= (*it)->render(drawList, offset);
     }
+    for(auto it = output.begin(), end = output.end(); it != end; ++it) {
+        updt |= (*it)->render(drawList, offset);
+    }
+	ImGui::EndGroup();
+
+	bool nodeWidgetsActive = (!oldAnyActive && ImGui::IsAnyItemActive());
+	size = ImGui::GetItemRectSize() + padding + padding;
+	ImVec2 farPos = offset + size;
+
+	drawList->ChannelsSetCurrent(0);
+	ImGui::SetCursorScreenPos(offset);
+	ImGui::InvisibleButton("node", size);
+	if(ImGui::IsItemHovered()) {
+
+	}
+	bool nodeMoveActive = ImGui::IsItemActive();
+	if(nodeMoveActive || nodeWidgetsActive) {
+
+	}
+	if(nodeMoveActive && ImGui::IsMouseDragging(0)) {
+		pos += ImGui::GetIO().MouseDelta;
+	}
+
+	drawList->AddRectFilled(offset, farPos, ImColor(60, 60, 60), 4.0f);
+	drawList->AddRect(offset, farPos, ImColor(100, 100, 100), 4.0f);
+
+	ImGui::PopID();
     return updt;
 }
 
-bool Socket::render() {
-    bool updt = false;
-    const string name = (input?"SocketIn":"SocketOut") + to_string(id);
-    if(ImGui::TreeNode(name.c_str())) {
-        draw(updt);
-        ImGui::TreePop();
-    }
+bool Socket::render(ImDrawList* drawList, ImVec2 offset) {
+	bool updt = false;
+
+    ImGui::BeginGroup();
+    pos = ImGui::GetCursorScreenPos();
+    //ImGui::Button(((input?"S##i":"S##o") + to_string(id)).c_str());
+    //ImGui::SameLine();
+    //ImGui::BeginGroup();
+    draw(updt);
+    //ImGui::EndGroup();
+    ImGui::EndGroup();
+
+    float sockHeight = ImGui::GetItemRectSize().y/2;
+    pos.y += sockHeight;
+    pos.x = offset.x + (input ? 0 : node->size.x);
+
+    drawList->ChannelsSetCurrent(1);
+    drawList->AddCircleFilled(pos, 5.f, ImColor(255, 255, 255, 127), 8);
+
     return updt;
 }
 
-bool Link::render() {
+bool Link::render(ImDrawList* drawList, ImVec2 offset) {
     bool updt = false;
-    const string name = "Link" + to_string(id);
-    if(ImGui::TreeNode(name.c_str())) {
-        updt |= from->render();
-        updt |= to->render();
+	ImVec2 p1 = from->pos;// + offset;
+	ImVec2 p2 = to->pos;// + offset;
+	drawList->AddBezierCurve(p1, p1+ImVec2(50, 0), p2+ImVec2(-50, 0), p2, ImColor(200, 200, 100), 3.0f);
+	/*if(ImGui::TreeNode("Link", "Link%d", id)) {
+        updt |= from->render(drawList, offset);
+        updt |= to->render(drawList, offset);
         ImGui::TreePop();
-    }
+    }*/
     return updt;
 }

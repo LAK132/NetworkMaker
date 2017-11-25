@@ -137,12 +137,11 @@ int main(int argc, char **argv)
 	nt.id = 0;
 	nt.save(nodetree_j);
 
-	cout << json << flush;
-
 
 	//sf::CircleShape shape(100.f);
 	//shape.setFillColor(sf::Color::Green);
 
+	NodeGraph ng = NodeGraph(&nt);
 
     bool testWindow;
 	sf::Clock deltaClock;
@@ -161,11 +160,17 @@ int main(int argc, char **argv)
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGui::ShowTestWindow(&testWindow);
+        //ImGui::ShowTestWindow(&testWindow);
 
 
         ImGui::Begin("Hello World!");
-            if(nt.render()){
+            if(ImGui::Button("Save")) {
+                cout << "save" << endl;
+                nt.id = 0;
+                nt.save(nodetree_j);
+            }
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+            if(ng.render(drawList)){
                 n->poll();
             }
             /*if(ImGui::Button("Look at this pretty button")){
@@ -178,6 +183,11 @@ int main(int argc, char **argv)
         ImGui::SFML::Render(window);
         window.display();
     }
+
+	nt.id = 0;
+	nt.save(nodetree_j);
+
+	cout << json << flush;
 
     ImGui::SFML::Shutdown();
 }

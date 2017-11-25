@@ -83,7 +83,23 @@ public:
 	}
 	template<typename T>
 	const T& init(const string& idx, const T& t){      //Init idx to t if it not already set
-        return ((*this).has(idx) ? (*this)(idx).template get<T>() : t);
+        if((*this).has(idx)) {
+            return (*this)(idx).template get<T>();
+        }
+        (*this)(idx).template set(t);
+        return t;
+	}
+	template<typename T>
+	const T& init(const size_t idx, const T&& t){
+        return init(idx, t);
+	}
+	template<typename T>
+	const T& init(const size_t idx, const T& t){      //Init idx to t if it not already set
+        if(idx < (*this).arrSize()) {
+            return (*this)[idx].template get<T>();
+        }
+        (*this).at(idx).template set(t);
+        return t;
 	}
 };
 
