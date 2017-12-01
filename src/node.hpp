@@ -63,7 +63,14 @@ template <typename T> Node* NodeType(NodeTree* nt, uint64_t nid, JSON* json);
 extern map<string, NodeMaker> MakeNode;
 
 class NodeTree : public Data, public Prop {
+protected:
+    void _removeLink(Link* lnk);
+    friend class Link;
 public:
+	bool draggingLink = false;
+	Socket* dragFromPtr = 0;
+	Socket* dragToPtr = 0;
+
 	uint64_t id;			//Unique ID of this NodeTree in its JSON stream
 	vector<Node*> node;		//Pointers to all Nodes in this NodeTree
 	vector<Link*> link;		//Pointers to all Socket Links in this NodeTree
@@ -75,10 +82,12 @@ public:
 	Node* addNode(const string& nodeType, JSON* json = 0);	//Add Node with nodeType
 	Node* addNode(JSON* json);								//Add Node with JSON("type")
 	Link* addLink(Socket* from, Socket* to);
+	void removeLink(Link* lnk);
 
 	void load(JSON& nodetree_j);	//Load NodeTree data from JSON stream
 	void save(JSON& nodetree_j);	//Save NodeTree data to JSON stream
 	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	void poll();
 };
 
 //A SocketMaker instance is a SocketType<T> constructor saved with type information
@@ -97,6 +106,7 @@ public:
 	vector<Socket*> input;	//Pointers to all Input Sockets for this Node
 	vector<Socket*> output;	//Pointers to all Output Sockets for this Node
 	string name;			//Non-unique name
+    bool polled = false;
 
 	Node(NodeTree* nt, uint64_t nid, JSON* json = 0);
 	~Node();
@@ -115,14 +125,16 @@ public:
 	void save(JSON& node_j);	//Save Node data to JSON stream
 	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 
-	virtual void loadData(JSON& data_j) =0;	//Load Derived Node class data from JSON stream
-	virtual void saveData(JSON& data_j) =0;	//Save Derived Node class data tp JSON stream
-	virtual void poll() =0;					//Poll the Node to recalculate its outputs
-	virtual void draw(bool& updt) =0;
+	virtual void loadData(JSON& data_j);	//Load Derived Node class data from JSON stream
+	virtual void saveData(JSON& data_j);	//Save Derived Node class data tp JSON stream
+	virtual Node* poll();					//Poll the Node to recalculate its outputs
+	virtual void draw(bool& updt);
 };
 
 class Socket : public Data, public Prop {
 public:
+    bool isHovered = false;
+
 	string type;			//The type name of this Socket instance
 	Node* node;				//Pointer to the parent Node
 	uint64_t id;			//Unique ID of this Socket in its Node
@@ -140,9 +152,9 @@ public:
 	void save(JSON& socket_j);	//Save Socket data to JSON stream
 	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 
-	virtual void loadData(JSON& data_j) =0;	//Load Derived Socket class data from JSON stream
-	virtual void saveData(JSON& data_j) =0;	//Save Derived Socket class data to JSON stream
-	virtual void draw(bool& updt) =0;
+	virtual void loadData(JSON& data_j);	//Load Derived Socket class data from JSON stream
+	virtual void saveData(JSON& data_j);	//Save Derived Socket class data to JSON stream
+	virtual void draw(bool& updt);
 };
 
 class Link : public Data, public Prop {

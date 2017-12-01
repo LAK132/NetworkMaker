@@ -1,5 +1,6 @@
 //Node backend
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -22,6 +23,101 @@ using namespace std;
 
 //https://gist.github.com/ocornut/7e9b3ec566a333d725d4
 
+void errorModal()
+{
+    if(ImGui::BeginPopupModal("Error", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Error");
+        if (ImGui::Button("OK", ImVec2(120,0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void openButton(string& fileName, NodeTree& nt, JSON& json)
+{
+    if(ImGui::Button("Open"))
+    {
+        ImGui::OpenPopup("OpenPopup");
+    }
+    if(ImGui::BeginPopupModal("OpenPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        if (ImGui::Button("OK", ImVec2(120,0)))
+        {
+            if(fileName != "")
+            {
+                ifstream file;
+                file.open(fileName.c_str());
+                if(file.is_open())
+                {
+                    file >> json;
+                    nt.load(json("nodetree").at(0));
+                    file.close();
+                }
+                //else ImGui::OpenPopup("Error");
+            }
+            //else ImGui::OpenPopup("Error");
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120,0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void saveAsButton(string& fileName, NodeTree& nt, JSON& json)
+{
+    if(ImGui::Button("Save As"))
+    {
+        ImGui::OpenPopup("SavePopup");
+    }
+    if(ImGui::BeginPopupModal("SavePopup", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        if (ImGui::Button("OK", ImVec2(120,0))) {
+            if(fileName != "")
+            {
+                ofstream file;
+                file.open(fileName.c_str(), ofstream::trunc);
+                if(file.is_open())
+                {
+                    nt.save(json("nodetree").at(0));
+                    file << json;
+                    file.close();
+                }
+                //else ImGui::OpenPopup("Error");
+            }
+            //else ImGui::OpenPopup("Error");
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120,0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void mainMenu(NodeTree& nt, JSON& json)
+{
+    if(ImGui::BeginMenuBar())
+    {
+        if(ImGui::BeginMenu("File"))
+        {
+            string fileName = "demo/demo1.json";
+            saveAsButton(fileName, nt, json);
+            openButton(fileName, nt, json);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+}
+
 int main(int argc, char **argv)
 {
     // Create the main window
@@ -29,63 +125,10 @@ int main(int argc, char **argv)
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 
-    // Load a sprite to display
-    /*sf::Texture texture;
-    if (!texture.loadFromFile("cb.bmp"))
-        return EXIT_FAILURE;
-    sf::Sprite sprite(texture);*/
-
 	JSON json = JSON();
-
-	//cin >> json;
 
 	JSON& nodetree_j = json("nodetree").at(0);
 	JSON& node_l = nodetree_j("node");
-
-	/*//node_l[0]("data").set(n);
-	//node_l[0]("input")[0]("data").set(s);
-	node_l[0]("output")[0]("linked").set(true);
-	//node_l[0]("output")[0]("data").set(s);
-
-	//cout << "1 A 1\n";
-
-	//cout << json("nodetree")[0]("node")[0]("socket")[0]("input").get<bool>() << endl;
-	//cout << json("nodetree")[0]("node")[0]("socket")[1]("input").get<bool>() << endl;
-
-	//cout << "1 B\n";
-
-	//node_l[1]("data").set(n);
-	//node_l[1]("input")[0]("data").set(s);
-	//node_l[1]("output")[0]("input").set(false);
-	node_l[1]("output")[0]("linked").set(true);
-	//node_l[1]("output")[0]("data").set(s);
-
-	//cout << "1 C\n";
-
-	//node_l[2]("data").set(n);
-	node_l[2]("input")[0]("linked").set(true);
-	//node_l[2]("input")[0]("data").set(s);
-	node_l[2]("input")[1]("linked").set(true);
-	//node_l[2]("input")[1]("data").set(s);
-	//node_l[2]("output")[0]("data").set(s);
-
-	//cout << "1 D\n";
-
-	JSON& link_l = nodetree_j("link");
-
-	link_l[0]("fromNode").set((uint64_t)0);
-	link_l[0]("fromSocket").set((uint64_t)0);
-	link_l[0]("toNode").set((uint64_t)2);
-	link_l[0]("toSocket").set((uint64_t)0);
-
-	//cout << "1 E\n";
-
-	link_l[1]("fromNode").set((uint64_t)1);
-	link_l[1]("fromSocket").set((uint64_t)0);
-	link_l[1]("toNode").set((uint64_t)2);
-	link_l[1]("toSocket").set((uint64_t)1);*/
-
-	//cout << "2\n";
 
 	MakeNode.emplace("neuron", NodeType<Neuron>);
 	MakeSocket.emplace("synapse", SocketType<Synapse>);
@@ -137,7 +180,6 @@ int main(int argc, char **argv)
 	nt.id = 0;
 	nt.save(nodetree_j);
 
-
 	//sf::CircleShape shape(100.f);
 	//shape.setFillColor(sf::Color::Green);
 
@@ -160,10 +202,12 @@ int main(int argc, char **argv)
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        //ImGui::ShowTestWindow(&testWindow);
+        ImGui::ShowTestWindow(&testWindow);
 
-
-        ImGui::Begin("Hello World!");
+        ImGuiWindowFlags windowFlags = 0;
+        windowFlags |= ImGuiWindowFlags_MenuBar;
+        ImGui::Begin("Hello World!", NULL, windowFlags);
+            mainMenu(nt, json);
             if(ImGui::Button("Save")) {
                 cout << "save" << endl;
                 nt.id = 0;
@@ -171,7 +215,8 @@ int main(int argc, char **argv)
             }
             ImDrawList* drawList = ImGui::GetWindowDrawList();
             if(ng.render(drawList)){
-                n->poll();
+                nt.poll();
+                //((Neuron*)nt.node[3])->poll();
             }
             /*if(ImGui::Button("Look at this pretty button")){
                 window.close();

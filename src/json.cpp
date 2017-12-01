@@ -244,7 +244,7 @@ istream& operator>>(istream& is, JSON& json) {
     //cout << "1 1 A " << c << endl;
     if (c == '{')
     {
-        //cout << "{" << endl;
+        c = skipto(is, "\"}");
         while(c != '}')
         {
             skipover(is, "\"");
@@ -273,12 +273,13 @@ istream& operator>>(istream& is, JSON& json) {
     }
     else if (c == '[')
     {
-        //cout << "[" << endl;
+        c = skipto(is, "\"{[]");
         while(c != ']')
         {
             skipto(is, "\"{[");
 
             json.arrdata.push_back(JSON());
+
             is >> json.arrdata.back();
 
             c = skipover(is, ",]");

@@ -44,22 +44,24 @@ private:
 	double val;
 public:
 	double weight;
-	using Socket::Socket;
+	//using Socket::Socket;
+	Synapse(Node* n, uint64_t sid, bool isIn, JSON* json = 0);
 	void set(double value);
 	double get();
-	void loadData(JSON& json);
-	void saveData(JSON& json);
-	void draw(bool& updt);
+	void loadData(JSON& json) override;
+	void saveData(JSON& json) override;
+	void draw(bool& updt) override;
 };
 
 class Neuron : public Node
 {
 public:
-	using Node::Node;
-	void loadData(JSON& json);
-	void saveData(JSON& json);
-	void poll();
-	void draw(bool& updt);
+	//using Node::Node;
+    Neuron(NodeTree* nt, uint64_t nid, JSON* json = 0);
+	void loadData(JSON& json) override;
+	void saveData(JSON& json) override;
+	Node* poll() override;
+	void draw(bool& updt) override;
 };
 
 #endif
