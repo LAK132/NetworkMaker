@@ -1,3 +1,5 @@
+#include <chaiscript/chaiscript.hpp>
+
 //Node backend
 #include <iostream>
 #include <fstream>
@@ -78,4 +80,21 @@ int main(int argc, char **argv)
 	nt.save(nodetree_j);
 
 	cout << json << flush;
+
+	chaiscript::ChaiScript chai;
+	chai.add(chaiscript::user_type<Link>(), "Link");
+	chai.add(chaiscript::user_type<Socket>(), "Socket");
+	chai.add(chaiscript::user_type<Node>(), "Node");
+	//chai.add(chaiscript::constructor<NodeTree()>(), "NodeTree");
+	chai.add(chaiscript::user_type<NodeTree>(), "NodeTree");
+	chai.add(chaiscript::user_type<NodeGraph>(), "NodeGraph");
+
+	chai.add(chaiscript::var(ref(ng)), "nodegraph");
+
+
+    //chai.add(chaiscript::fun(&helloWorld), "helloWorld");
+
+    /*chai.eval(R"(
+var nodetree = NodeTree();
+    )");*/
 }
