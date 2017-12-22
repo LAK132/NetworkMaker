@@ -219,8 +219,6 @@ void NodeTree::load(JSON& nodetree_j) {
 void Node::load(JSON& node_j) {
 	type = node_j.init<string>("type", (string)"");
     name = node_j.init<string>("name", "Node " + to_string(id));
-	pos.x = node_j("pos").init<float>(0, 0.0f);
-	pos.y = node_j("pos").init<float>(1, 0.0f);
 	JSON& input_l = node_j("input");
 	uint64_t numInputs = input_l.arrSize();
 	input.resize(numInputs);
@@ -277,8 +275,6 @@ void NodeTree::save(JSON& nodetree_j) {
 
 void Node::save(JSON& node_j) {
 	node_j("type").set(type);
-	node_j("pos").at(0).set(pos.x);
-	node_j("pos").at(1).set(pos.y);
 	saveData(node_j("data"));
 	JSON& input_l = node_j("input");
 	for(size_t i = 0; i < input.size(); i++)
