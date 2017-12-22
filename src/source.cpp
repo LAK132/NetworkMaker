@@ -70,9 +70,6 @@ int main(int argc, char **argv)
 	nt.id = 0;
 	nt.save(nodetree_j);
 
-	//sf::CircleShape shape(100.f);
-	//shape.setFillColor(sf::Color::Green);
-
 	NodeGraph ng = NodeGraph(&nt);
 
     nt.poll();

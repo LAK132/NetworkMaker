@@ -21,7 +21,6 @@ using std::unique_ptr;
 
 #include "json.hpp"
 #include "property.hpp"
-#include "prop.hpp"
 
 #ifndef NODE_H
 #define NODE_H
@@ -37,7 +36,7 @@ public:
 	virtual void save(JSON& json) =0;
 };
 
-class NodeGraph : public Prop {
+class NodeGraph {
 public:
 	//ImVec2 scrolling = ImVec2(0.0f, 0.0f);
 	//bool showGrid = true;
@@ -56,7 +55,7 @@ template <typename T> Node* NodeType(NodeTree* nt, uint64_t nid, JSON* json);
 //Global list of all Node constructors
 extern map<string, NodeMaker> MakeNode;
 
-class NodeTree : public Data, public Prop {
+class NodeTree : public Data {
 protected:
     void _removeLink(Link* lnk);
     friend class Link;
@@ -92,7 +91,7 @@ template <typename T> Socket* SocketType(Node* n, uint64_t sid, bool isIn, JSON*
 //Global list of all Socket constructors
 extern map<string, SocketMaker> MakeSocket;
 
-class Node : public Data, public Prop {
+class Node : public Data {
 public:
 	string type;			//The type name of this Node instance
 	NodeTree* nodetree;		//Pointer to the parent NodeTree
@@ -125,7 +124,7 @@ public:
 	//virtual void draw(bool& updt);
 };
 
-class Socket : public Data, public Prop {
+class Socket : public Data {
 public:
     bool isHovered = false;
 
@@ -151,7 +150,7 @@ public:
 	//virtual void draw(bool& updt);
 };
 
-class Link : public Data, public Prop {
+class Link : public Data {
 public:
 	uint64_t id;
 	Socket* to;
