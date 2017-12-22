@@ -18,12 +18,6 @@ using std::endl;
 using std::flush;
 #include <memory>
 using std::unique_ptr;
-//#include <SFML/Graphics.hpp>
-//using sf::Vector2f;
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui.h"
-#include "imgui_internal.h"
 
 #include "json.hpp"
 #include "property.hpp"
@@ -45,13 +39,13 @@ public:
 
 class NodeGraph : public Prop {
 public:
-	ImVec2 scrolling = ImVec2(0.0f, 0.0f);
-	bool showGrid = true;
+	//ImVec2 scrolling = ImVec2(0.0f, 0.0f);
+	//bool showGrid = true;
 	NodeTree* nodeTree;
 
 	NodeGraph(NodeTree* nt);
 
-	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	//bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 };
 
 //A NodeMaker instance is a NodeType<T> constructor saved with type information
@@ -86,7 +80,7 @@ public:
 
 	void load(JSON& nodetree_j);	//Load NodeTree data from JSON stream
 	void save(JSON& nodetree_j);	//Save NodeTree data to JSON stream
-	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	//bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 	void poll();
 };
 
@@ -123,12 +117,12 @@ public:
 
 	void load(JSON& node_j);	//Load Node data from JSON stream
 	void save(JSON& node_j);	//Save Node data to JSON stream
-	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	//bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 
 	virtual void loadData(JSON& data_j);	//Load Derived Node class data from JSON stream
 	virtual void saveData(JSON& data_j);	//Save Derived Node class data tp JSON stream
 	virtual Node* poll();					//Poll the Node to recalculate its outputs
-	virtual void draw(bool& updt);
+	//virtual void draw(bool& updt);
 };
 
 class Socket : public Data, public Prop {
@@ -150,11 +144,11 @@ public:
 
 	void load(JSON& socket_j);	//Load Socket data from JSON stream
 	void save(JSON& socket_j);	//Save Socket data to JSON stream
-	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	//bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 
 	virtual void loadData(JSON& data_j);	//Load Derived Socket class data from JSON stream
 	virtual void saveData(JSON& data_j);	//Save Derived Socket class data to JSON stream
-	virtual void draw(bool& updt);
+	//virtual void draw(bool& updt);
 };
 
 class Link : public Data, public Prop {
@@ -168,7 +162,7 @@ public:
 
 	void load(JSON& link_j);	//Load Link data from JSON stream
 	void save(JSON& link_j);	//Save Link data to JSON stream
-	bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
+	//bool render(ImDrawList* drawList, ImVec2 offset = ImVec2(0.0f, 0.0f));
 };
 
 #include "node_temp.hpp"

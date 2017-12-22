@@ -50,7 +50,6 @@ public:
 	double get();
 	void loadData(JSON& json) override;
 	void saveData(JSON& json) override;
-	void draw(bool& updt) override;
 };
 
 class Neuron : public Node
@@ -61,7 +60,6 @@ public:
 	void loadData(JSON& json) override;
 	void saveData(JSON& json) override;
 	Node* poll() override;
-	void draw(bool& updt) override;
 };
 
 #endif

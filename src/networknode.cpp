@@ -29,10 +29,6 @@ Node* Neuron::poll() {
     return nullptr;
 }
 
-void Neuron::draw(bool& updt) {
-
-}
-
 Synapse::Synapse(Node* n, uint64_t sid, bool isIn, JSON* json) : Socket(n, sid, isIn) {
     if(json != 0) load(*json);
 }
@@ -65,39 +61,5 @@ double Synapse::get() {
     {
         val = ((Synapse*)(link->from))->get();
         return val * weight;
-    }
-}
-
-void Synapse::draw(bool& updt) {
-    string str = "Value: ";
-    str += to_string(val);
-    ImGui::Text(str.c_str());
-    if(input) {
-        if(!linked) {
-            ImGui::SameLine();
-            if(ImGui::Button("+##val")) {
-                val += 0.1;
-                updt = true;
-            }
-            ImGui::SameLine();
-            if(ImGui::Button("-##val")) {
-                val -= 0.1;
-                updt = true;
-            }
-        }
-
-        str = "Weight: ";
-        str += to_string(weight);
-        ImGui::Text(str.c_str());
-        ImGui::SameLine();
-        if(ImGui::Button("+##weight")) {
-            weight += 0.1;
-            updt = true;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("-##weight")) {
-            weight -= 0.1;
-            updt = true;
-        }
     }
 }
