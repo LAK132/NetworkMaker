@@ -1,5 +1,8 @@
-networkmaker
-NetworkMaker.cbp
-NetworkMaker.depend
-NetworkMaker.layout
-bin/Debug/NetworkMaker
+out/
+bin/
+.vscode/
+.vs/
+
+*.pdb
+*.pyc
+*.i
